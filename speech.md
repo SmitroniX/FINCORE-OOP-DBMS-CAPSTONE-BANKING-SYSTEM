@@ -48,7 +48,7 @@
 
 ## 🗣️ Speaker 2: OOP Principles (Encapsulation, Inheritance & Polymorphism)
 **⏱️ Target Time:** 2.5 Minutes  
-**🎬 Cue:** Switch to Class Hierarchy Diagram & Code Snippets of `Account`, `SavingsAccount`, and `CheckingAccount`
+**🎬 Cue:** Switch to UML Class Diagram (see `docs/ERD_AND_UML.md`) & Code Snippets of `Account`, `SavingsAccount`, and `CheckingAccount`
 
 ### 🎙️ Dialogue / Spoken Script:
 
@@ -84,7 +84,7 @@
 
 ## 🗣️ Speaker 3: DBMS Architecture, Schema Design & ACID Transactions
 **⏱️ Target Time:** 3 Minutes  
-**🎬 Cue:** Switch to Entity-Relationship (ER) Diagram & `BankingService.transferFunds()` Code
+**🎬 Cue:** Switch to Entity-Relationship (ER) Diagram & ACID Sequence Diagram (see `docs/ERD_AND_UML.md`)
 
 ### 🎙️ Dialogue / Spoken Script:
 

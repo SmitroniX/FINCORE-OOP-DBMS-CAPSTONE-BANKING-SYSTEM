@@ -8,31 +8,98 @@ An enterprise-grade Java and Relational Database Management System (DBMS) Capsto
 
 FinCore models a modern banking system with an interactive CLI, polymorphic account logic, relational schema migrations, immutable transaction ledgers, and audit logging.
 
+```mermaid
+flowchart TD
+    subgraph Presentation_Layer["1. Presentation Layer"]
+        CLI["Interactive Console UI (ConsoleMenu.java)"]
+        DEMO["Automated Demo Runner (DemoRunner.java)"]
+    end
+
+    subgraph Service_Layer["2. Business Logic & Service Layer"]
+        BS["BankingService (ACID Transfers, APR Interest, Fees)"]
+        CS["CustomerService (Customer Lifecycle & Accounts)"]
+        RS["ReportService (Relational Analytics & DTOs)"]
+    end
+
+    subgraph Repository_Layer["3. Data Access (Repository) Layer"]
+        CR["JdbcCustomerRepository"]
+        AR["JdbcAccountRepository (Polymorphic Hydration)"]
+        TR["JdbcTransactionRepository (Immutable Ledger)"]
+        ALR["JdbcAuditLogRepository (Security Logging)"]
+        DBM["DatabaseManager (Connection Lifecycle & Transactions)"]
+    end
+
+    subgraph Storage_Layer["4. Relational DBMS Storage Engine"]
+        SQLITE[("SQLite (Embedded fincore_banking.db)")]
+        MYSQL[("MySQL (Enterprise InnoDB Server)")]
+    end
+
+    CLI --> BS & CS & RS
+    DEMO --> BS & CS & RS
+    BS --> AR & TR & ALR & DBM
+    CS --> CR & AR & ALR
+    RS --> CR & AR & TR & ALR & DBM
+    CR & AR & TR & ALR --> DBM
+    DBM --> SQLITE
+    DBM -.->|Switchable in db.properties| MYSQL
 ```
-                  +-----------------------------------+
-                  |         Console CLI / Demo        |
-                  +-----------------------------------+
-                                    |
-                  +-----------------------------------+
-                  |           Service Layer           |
-                  | BankingService | CustomerService  |
-                  |          ReportService            |
-                  +-----------------------------------+
-                                    |
-                  +-----------------------------------+
-                  |     Repository / DAO Layer        |
-                  | CustomerRepo | AccountRepo        |
-                  | TransactionRepo | AuditLogRepo    |
-                  +-----------------------------------+
-                                    |
-                  +-----------------------------------+
-                  |       DBMS Connection Manager     |
-                  +-----------------------------------+
-                       /                         \
-           +---------------------+     +---------------------+
-           | SQLite (Zero-Config)|     |  MySQL (Production) |
-           +---------------------+     +---------------------+
+
+---
+
+## 📊 Database Entity-Relationship (ER) Diagram
+
+```mermaid
+erDiagram
+    CUSTOMERS ||--o{ ACCOUNTS : "owns (1:N)"
+    ACCOUNTS ||--o{ TRANSACTIONS : "generates (1:N)"
+    CUSTOMERS ||--o{ AUDIT_LOGS : "triggers (1:N)"
+
+    CUSTOMERS {
+        BIGINT id PK "Auto Increment"
+        VARCHAR customer_code UK "Unique Identifier"
+        VARCHAR name "Full Name"
+        VARCHAR email UK "Unique Email Address"
+        VARCHAR phone "Contact Number"
+        VARCHAR role "CUSTOMER / ADMIN"
+        VARCHAR status "ACTIVE / SUSPENDED"
+        TIMESTAMP created_at "Registration Timestamp"
+    }
+
+    ACCOUNTS {
+        VARCHAR account_number PK "Unique Account String"
+        BIGINT customer_id FK "References CUSTOMERS(id)"
+        VARCHAR account_type "SAVINGS / CHECKING"
+        DECIMAL balance "Current Balance"
+        DECIMAL interest_rate "Annual APR (for Savings)"
+        DECIMAL overdraft_limit "Credit Allowance (for Checking)"
+        VARCHAR status "ACTIVE / FROZEN / CLOSED"
+        TIMESTAMP created_at "Creation Timestamp"
+    }
+
+    TRANSACTIONS {
+        BIGINT id PK "Auto Increment"
+        VARCHAR transaction_id UK "UUID Reference"
+        VARCHAR account_number FK "References ACCOUNTS(account_number)"
+        VARCHAR type "DEPOSIT / WITHDRAWAL / TRANSFER_OUT / TRANSFER_IN"
+        DECIMAL amount "Value (>0)"
+        DECIMAL balance_after "Ledger Balance After Execution"
+        VARCHAR target_account "Recipient/Sender Account Number"
+        VARCHAR description "Memo / Purpose"
+        TIMESTAMP created_at "Execution Timestamp"
+    }
+
+    AUDIT_LOGS {
+        BIGINT id PK "Auto Increment"
+        VARCHAR action "Action Code"
+        VARCHAR entity_type "Target Entity"
+        VARCHAR entity_id "Target Key"
+        VARCHAR performed_by "Operator"
+        TEXT details "Operation Details"
+        TIMESTAMP timestamp "Occurrence Timestamp"
+    }
 ```
+
+> 📖 **Full System Diagrams**: Detailed UML Class Diagram, Sequence Diagram, and Schema Data Dictionary are available in [`docs/ERD_AND_UML.md`](docs/ERD_AND_UML.md).
 
 ---
 
