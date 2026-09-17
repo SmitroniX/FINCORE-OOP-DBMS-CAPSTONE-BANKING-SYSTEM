@@ -7,17 +7,19 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-echo "========================================================="
-echo " Building and Launching FinCore Banking System Capstone"
-echo "========================================================="
+JAR_FILE="$SCRIPT_DIR/target/oop-dbms-capstone-1.0.0-jar-with-dependencies.jar"
 
-if [ "$1" == "--demo" ] || [ "$1" == "-d" ]; then
-    echo "Running in Automated Demonstration Mode..."
-    mvn exec:java -Dexec.args="--demo"
-elif [ "$1" == "--test" ] || [ "$1" == "-t" ]; then
+if [ "$1" == "--test" ] || [ "$1" == "-t" ]; then
     echo "Running Test Suite..."
     mvn test
-else
-    echo "Launching Interactive Console Interface..."
-    mvn exec:java
+    exit 0
 fi
+
+# Build fat JAR if not already built or if sources are newer
+if [ ! -f "$JAR_FILE" ]; then
+    echo "Building executable JAR package (one-time setup)..."
+    mvn clean package -DskipTests
+fi
+
+# Run application directly with full interactive terminal support
+exec java -jar "$JAR_FILE" "$@"

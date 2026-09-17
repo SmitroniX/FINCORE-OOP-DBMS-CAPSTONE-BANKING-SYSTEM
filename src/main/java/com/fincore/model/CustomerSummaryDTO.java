@@ -86,7 +86,7 @@ public class CustomerSummaryDTO {
 
     @Override
     public String toString() {
-        return String.format("%-10s | %-20s | %-25s | Accounts: %2d | Balance: $%,12.2f | Txs: %3d",
-                customerCode, customerName, email, totalAccounts, totalBalance, totalTransactions);
+        return String.format("%-4d | %-10s | %-20s | %-25s | Accounts: %2d | Balance: $%,12.2f | Txs: %3d",
+                customerId, customerCode, customerName, email, totalAccounts, totalBalance, totalTransactions);
     }
 }

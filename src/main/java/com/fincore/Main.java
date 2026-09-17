@@ -28,6 +28,14 @@ public class Main {
         System.out.println(CYAN + BOLD + "  FinCore: Object-Oriented DBMS Capstone Banking System" + RESET);
         System.out.println(CYAN + BOLD + "============================================================" + RESET);
 
+        // Register clean shutdown hook for JDBC driver cleanup threads
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                com.mysql.cj.jdbc.AbandonedConnectionCleanupThread.checkedShutdown();
+            } catch (Throwable ignored) {
+            }
+        }));
+
         // 1. Initialize Database and run schema migrations
         DatabaseManager dbManager = DatabaseManager.getInstance();
         System.out.println("[Bootstrap] Initializing database engine (" + dbManager.getConfig().getDbType() + ")...");

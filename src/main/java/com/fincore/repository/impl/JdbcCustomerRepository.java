@@ -159,13 +159,24 @@ public class JdbcCustomerRepository implements CustomerRepository {
                    c.customer_code,
                    c.name,
                    c.email,
-                   COUNT(DISTINCT a.account_number) AS total_accounts,
-                   COALESCE(SUM(a.balance), 0.0) AS total_balance,
-                   COUNT(t.id) AS total_transactions
+                   COALESCE(acc.total_accounts, 0) AS total_accounts,
+                   COALESCE(acc.total_balance, 0.0) AS total_balance,
+                   COALESCE(tx.total_transactions, 0) AS total_transactions
             FROM customers c
-            LEFT JOIN accounts a ON c.id = a.customer_id
-            LEFT JOIN transactions t ON a.account_number = t.account_number
-            GROUP BY c.id, c.customer_code, c.name, c.email
+            LEFT JOIN (
+                SELECT customer_id,
+                       COUNT(account_number) AS total_accounts,
+                       SUM(balance) AS total_balance
+                FROM accounts
+                GROUP BY customer_id
+            ) acc ON c.id = acc.customer_id
+            LEFT JOIN (
+                SELECT a.customer_id,
+                       COUNT(t.id) AS total_transactions
+                FROM accounts a
+                JOIN transactions t ON a.account_number = t.account_number
+                GROUP BY a.customer_id
+            ) tx ON c.id = tx.customer_id
             ORDER BY total_balance DESC
         """;
 

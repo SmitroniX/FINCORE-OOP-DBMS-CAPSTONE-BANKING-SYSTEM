@@ -101,4 +101,25 @@ public class CustomerService {
     public List<Account> getAccountsByCustomerId(Long customerId) {
         return accountRepo.findByCustomerId(customerId);
     }
+
+    /**
+     * Resolves a customer by either their numeric primary ID or their alphanumeric customer code.
+     */
+    public Customer findCustomerByIdOrCode(String identifier) {
+        if (identifier == null || identifier.trim().isEmpty()) {
+            throw new BankingException("Customer ID or Code cannot be empty.");
+        }
+        String clean = identifier.trim();
+        try {
+            Long id = Long.parseLong(clean);
+            Optional<Customer> opt = customerRepo.findById(id);
+            if (opt.isPresent()) {
+                return opt.get();
+            }
+        } catch (NumberFormatException ignored) {
+            // Treat as customer code string
+        }
+        return customerRepo.findByCustomerCode(clean)
+                .orElseThrow(() -> new BankingException("Customer not found for ID or Code: '" + clean + "'."));
+    }
 }

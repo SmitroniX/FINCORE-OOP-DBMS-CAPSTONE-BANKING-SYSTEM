@@ -37,6 +37,13 @@
             <version>${mysql.version}</version>
         </dependency>
 
+        <!-- SLF4J Simple Logger implementation to eliminate missing binder warnings -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+
         <!-- JUnit 5 for Automated Unit and Integration Testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -85,6 +92,7 @@
                 <version>3.1.1</version>
                 <configuration>
                     <mainClass>com.fincore.Main</mainClass>
+                    <cleanupDaemonThreads>false</cleanupDaemonThreads>
                 </configuration>
             </plugin>
 
