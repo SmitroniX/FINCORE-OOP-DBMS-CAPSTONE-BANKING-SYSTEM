@@ -132,7 +132,7 @@ public class FinanceDashboardFrame extends JFrame implements DatabaseManager.Sql
         titleLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
 
         String dbType = DatabaseManager.getInstance().getConfig().getDbType().toUpperCase();
-        JLabel dbTag = new JLabel("DBMS: Connected to " + dbType + " via JDBC | Oracle 10g XE Ready");
+        JLabel dbTag = new JLabel("DBMS: Default Oracle 10g XE | Active Engine: " + dbType + " via JDBC");
         dbTag.setForeground(new Color(176, 196, 222));
         dbTag.setFont(new Font("SansSerif", Font.PLAIN, 12));
 

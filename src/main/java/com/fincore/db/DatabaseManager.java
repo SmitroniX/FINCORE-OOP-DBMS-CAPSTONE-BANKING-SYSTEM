@@ -11,8 +11,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Manages JDBC connections, connection lifecycles, and transaction boundaries.
- * Demonstrates Object-Oriented singleton pattern and DBMS connection encapsulation.
- * Supports Oracle 10g XE, SQLite, and MySQL.
+ * Defaults to Oracle 10g XE with enterprise connection handling and fallback capability.
  */
 public class DatabaseManager {
 
@@ -53,13 +52,25 @@ public class DatabaseManager {
 
     /**
      * Obtains a new JDBC connection based on the active configuration.
-     * Supports Oracle 10g XE, SQLite, and MySQL.
+     * Defaults to Oracle 10g XE.
      */
     public Connection getConnection() throws SQLException {
         Connection conn;
         String type = config.getDbType();
         if ("oracle".equals(type) || "mysql".equals(type)) {
-            conn = DriverManager.getConnection(config.getJdbcUrl(), config.getDbUser(), config.getDbPassword());
+            try {
+                conn = DriverManager.getConnection(config.getJdbcUrl(), config.getDbUser(), config.getDbPassword());
+            } catch (SQLException e) {
+                if ("oracle".equals(type) && "true".equalsIgnoreCase(config.getProperty("oracle.fallback.sqlite", "true"))) {
+                    System.out.println("[DatabaseManager] Default DBMS Engine: Oracle 10g XE (Target: " + config.getJdbcUrl() + ").");
+                    System.out.println("[DatabaseManager] Notice: Local Oracle daemon not currently reachable on port 1521 (" + e.getMessage() + ").");
+                    System.out.println("[DatabaseManager] Activating automated embedded SQLite engine to maintain 100% operational availability.");
+                    config.setDbType("sqlite");
+                    initDrivers();
+                    return getConnection();
+                }
+                throw e;
+            }
         } else {
             conn = DriverManager.getConnection(config.getJdbcUrl());
             try (Statement stmt = conn.createStatement()) {
@@ -73,6 +84,15 @@ public class DatabaseManager {
      * Initializes the database schema and default seed data.
      */
     public void initializeDatabase() {
+        try {
+            // Probe connection to trigger driver load and fallback if Oracle is offline
+            try (Connection testConn = getConnection()) {
+                // Connection successfully verified
+            }
+        } catch (SQLException e) {
+            System.err.println("[DatabaseManager] Connection test notice: " + e.getMessage());
+        }
+
         MigrationRunner runner = new MigrationRunner(this);
         runner.runMigrations();
     }

@@ -7,7 +7,7 @@ import java.util.Properties;
 /**
  * Singleton configuration manager for database properties.
  * Reads configurations from db.properties and provides database connection metadata.
- * Supports Oracle 10g XE, SQLite, and MySQL.
+ * Defaults to Oracle 10g XE with full JDBC support.
  */
 public class DatabaseConfig {
 
@@ -30,9 +30,12 @@ public class DatabaseConfig {
             if (in != null) {
                 properties.load(in);
             } else {
-                System.err.println("[DatabaseConfig] db.properties not found on classpath, using SQLite defaults.");
-                properties.setProperty("db.type", "sqlite");
-                properties.setProperty("sqlite.url", "jdbc:sqlite:fincore_banking.db");
+                System.err.println("[DatabaseConfig] db.properties not found on classpath, defaulting to Oracle 10g XE.");
+                properties.setProperty("db.type", "oracle");
+                properties.setProperty("oracle.url", "jdbc:oracle:thin:@localhost:1521:xe");
+                properties.setProperty("oracle.user", "system");
+                properties.setProperty("oracle.password", "oracle");
+                properties.setProperty("oracle.fallback.sqlite", "true");
             }
         } catch (IOException e) {
             System.err.println("[DatabaseConfig] Failed to load db.properties: " + e.getMessage());
@@ -40,7 +43,11 @@ public class DatabaseConfig {
     }
 
     public String getDbType() {
-        return properties.getProperty("db.type", "sqlite").trim().toLowerCase();
+        return properties.getProperty("db.type", "oracle").trim().toLowerCase();
+    }
+
+    public void setDbType(String dbType) {
+        properties.setProperty("db.type", dbType != null ? dbType.trim().toLowerCase() : "oracle");
     }
 
     public String getJdbcUrl() {

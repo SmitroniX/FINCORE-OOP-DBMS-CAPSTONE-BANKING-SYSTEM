@@ -69,7 +69,7 @@ public class LoginFrame extends JFrame {
         titleLabel.setFont(new Font("SansSerif", Font.BOLD, 22));
 
         String dbType = DatabaseManager.getInstance().getConfig().getDbType().toUpperCase();
-        JLabel subLabel = new JLabel("Database-Backed Authentication (" + dbType + " via JDBC)", SwingConstants.CENTER);
+        JLabel subLabel = new JLabel("Default DBMS: Oracle 10g XE | Active: " + dbType + " via JDBC", SwingConstants.CENTER);
         subLabel.setForeground(new Color(176, 196, 222));
         subLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
 

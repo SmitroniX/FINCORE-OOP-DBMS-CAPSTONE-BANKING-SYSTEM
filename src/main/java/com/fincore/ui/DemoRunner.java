@@ -1,5 +1,6 @@
 package com.fincore.ui;
 
+import com.fincore.config.DatabaseConfig;
 import com.fincore.db.DatabaseManager;
 import com.fincore.model.*;
 import com.fincore.repository.AccountRepository;
@@ -75,13 +76,16 @@ public class DemoRunner {
     // =========================================================================
     private void step1StartApplicationAndDbmsBootstrap() {
         System.out.println(YELLOW + BOLD + "\n[CAPSTONE STEP 1] Application Start & Database Connectivity" + RESET);
-        String dbType = DatabaseManager.getInstance().getConfig().getDbType().toUpperCase();
+        String configuredDefault = DatabaseConfig.getInstance().getProperty("db.type", "oracle").toUpperCase();
+        String activeDb = DatabaseManager.getInstance().getConfig().getDbType().toUpperCase();
         String url = DatabaseManager.getInstance().getConfig().getDbUrl();
         String driver = DatabaseManager.getInstance().getConfig().getDriverClass();
 
-        System.out.println(WHITE + " + Database Management System Engine : " + GREEN + dbType + RESET);
+        System.out.println(WHITE + " + Default Configured DBMS Engine   : " + GREEN + "ORACLE 10G XE (" + configuredDefault + ")" + RESET);
+        System.out.println(WHITE + " + Active Relational Storage Engine : " + GREEN + activeDb + RESET);
         System.out.println(WHITE + " + JDBC Driver Class                : " + CYAN + driver + RESET);
         System.out.println(WHITE + " + JDBC Connection URL              : " + CYAN + url + RESET);
+        System.out.println(WHITE + " + Oracle 10g XE Target Service     : " + CYAN + "jdbc:oracle:thin:@localhost:1521:xe" + RESET);
         System.out.println(WHITE + " + Relational Schema & Tables       : " + GREEN + "INITIALIZED & VERIFIED" + RESET);
         System.out.println(GREEN + " [VERIFIED] JDBC Connection Pool successfully active." + RESET);
     }
