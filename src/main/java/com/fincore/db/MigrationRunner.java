@@ -21,8 +21,9 @@ public class MigrationRunner {
 
     public void runMigrations() {
         String schemaFile = dbManager.getConfig().getSchemaFile();
+        String seedFile = dbManager.getConfig().getSeedFile();
         executeSqlScript(schemaFile, "Schema Migration");
-        executeSqlScript("seed.sql", "Seed Data");
+        executeSqlScript(seedFile, "Seed Data");
     }
 
     private void executeSqlScript(String resourcePath, String scriptName) {

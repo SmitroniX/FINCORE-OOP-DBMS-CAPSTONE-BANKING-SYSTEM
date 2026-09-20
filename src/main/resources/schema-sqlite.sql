@@ -5,7 +5,18 @@
 
 PRAGMA foreign_keys = ON;
 
--- 1. Customers Table
+-- 1. Users Authentication Table (Username & Password Authentication)
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    full_name TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'USER' CHECK(role IN ('ADMIN', 'USER', 'MANAGER')),
+    status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK(status IN ('ACTIVE', 'LOCKED')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Customers Table
 CREATE TABLE IF NOT EXISTS customers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     customer_code TEXT NOT NULL UNIQUE,
@@ -17,7 +28,7 @@ CREATE TABLE IF NOT EXISTS customers (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 2. Bank Accounts Table (Supports Savings and Checking OOP sub-types)
+-- 3. Bank Accounts Table (Supports Savings and Checking OOP sub-types)
 CREATE TABLE IF NOT EXISTS accounts (
     account_number TEXT PRIMARY KEY,
     customer_id INTEGER NOT NULL,
@@ -30,7 +41,29 @@ CREATE TABLE IF NOT EXISTS accounts (
     FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
 );
 
--- 3. Transactions Table (ACID Ledger with foreign keys)
+-- 4. Financial Records Table (CRUD: Income & Expense Management)
+CREATE TABLE IF NOT EXISTS financial_records (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    record_type TEXT NOT NULL CHECK(record_type IN ('INCOME', 'EXPENSE')),
+    category TEXT NOT NULL,
+    amount REAL NOT NULL CHECK(amount > 0),
+    account_number TEXT,
+    description TEXT,
+    record_date TEXT DEFAULT (DATE('now')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (account_number) REFERENCES accounts(account_number) ON DELETE SET NULL
+);
+
+-- 5. Budgets Table (Category monthly allocations & tracking)
+CREATE TABLE IF NOT EXISTS budgets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category TEXT NOT NULL UNIQUE,
+    monthly_limit REAL NOT NULL CHECK(monthly_limit > 0),
+    period_month TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6. Transactions Table (ACID Ledger with foreign keys)
 CREATE TABLE IF NOT EXISTS transactions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     transaction_id TEXT NOT NULL UNIQUE,
@@ -44,7 +77,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     FOREIGN KEY (account_number) REFERENCES accounts(account_number) ON DELETE CASCADE
 );
 
--- 4. Audit Logs Table (Security and Governance tracking)
+-- 7. Audit Logs Table (Security and Governance tracking)
 CREATE TABLE IF NOT EXISTS audit_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     action TEXT NOT NULL,
@@ -55,8 +88,12 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 5. Indexes for fast query performance & DBMS optimization
+-- 8. Indexes for fast query performance & DBMS optimization
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_accounts_customer_id ON accounts(customer_id);
+CREATE INDEX IF NOT EXISTS idx_financial_type ON financial_records(record_type);
+CREATE INDEX IF NOT EXISTS idx_financial_category ON financial_records(category);
+CREATE INDEX IF NOT EXISTS idx_financial_date ON financial_records(record_date);
 CREATE INDEX IF NOT EXISTS idx_transactions_account_num ON transactions(account_number);
 CREATE INDEX IF NOT EXISTS idx_transactions_created_at ON transactions(created_at);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_timestamp ON audit_logs(timestamp);

@@ -37,6 +37,13 @@
             <version>${mysql.version}</version>
         </dependency>
 
+        <!-- Oracle 10g XE / Enterprise Oracle JDBC Driver -->
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc11</artifactId>
+            <version>23.3.0.23.09</version>
+        </dependency>
+
         <!-- SLF4J Simple Logger implementation to eliminate missing binder warnings -->
         <dependency>
             <groupId>org.slf4j</groupId>

@@ -1,183 +1,239 @@
-# 🎤 FinCore Capstone Project: Group Presentation & Explanation Script
+# 🎤 FinCore Capstone Project: 4-Person Presentation & Explanation Script
 
 > **Team Size:** 4 Presenters  
 > **Total Duration:** 10 – 12 Minutes (~2.5 to 3 minutes per speaker)  
-> **Project Name:** FinCore - Enterprise OOP & DBMS Banking System  
+> **Project Name:** FinCore - Enterprise Banking & Finance Management System  
+> **Technology Stack:** Java 17, Java Swing (`javax.swing`), JDBC, Oracle 10g XE / SQLite, Maven  
 > **Repository:** [https://github.com/SmitroniX/FINCORE-OOP-DBMS-CAPSTONE-BANKING-SYSTEM](https://github.com/SmitroniX/FINCORE-OOP-DBMS-CAPSTONE-BANKING-SYSTEM)
 
 ---
 
-## 👥 Speaker Roles Overview
+## 👥 Speaker Roles & Agenda
 
-| Speaker | Name / Role | Core Topic Covered | Key Slides / Screen Demonstrations |
+| Speaker | Role | Presentation Focus | Live UI / Code Demonstration |
 |---|---|---|---|
-| **Speaker 1** | Team Lead / System Architect | Project Introduction, Motivation, Architecture & Core Abstractions | Slide 1–3: Problem statement, System Architecture Diagram |
-| **Speaker 2** | OOP & Domain Specialist | OOP Principles: Encapsulation, Inheritance & Polymorphic Banking Rules | Slide 4–5: Class hierarchy (`Account`, `SavingsAccount`, `CheckingAccount`), Code walkthrough |
-| **Speaker 3** | DBMS & Database Engineer | Relational Schema, Integrity Constraints & ACID Transaction Atomicity | Slide 6–7: ER Diagram, Foreign Keys, Transfer commit & rollback code |
-| **Speaker 4** | Analytics & QA Lead | Relational SQL Analytics (JOINs & Aggregations), Test Suite & Live Demo | Slide 8–10: Terminal Live Demo (`./run.sh --demo`), JUnit results & Conclusion |
+| **Speaker 1** | Team Lead & Architect | • Project Overview & Motivation<br>• 3-Tier Enterprise Architecture<br>• Oracle DB-backed Authentication (Login) | Launch Application, Show Login Screen, Authenticate via DB |
+| **Speaker 2** | OOP & Domain Specialist | • OOP Principles: Encapsulation & Inheritance<br>• Runtime Polymorphism in Banking<br>• Financial Domain Entities | Code walkthrough: `Account` hierarchy & polymorphic adjustments |
+| **Speaker 3** | DBMS & Transactions Engineer | • Relational Schema & Oracle 10g XE Design<br>• Foreign Keys & Integrity Constraints<br>• ACID Transactions (Commit & Rollback) | Terminal trace: Atomic transfer commit and simulated rollback |
+| **Speaker 4** | Dashboard & CRUD Lead | • Java Swing Finance Dashboard Walkthrough<br>• **Complete CRUD Demonstration** (INSERT, SELECT, UPDATE, DELETE)<br>• Live JDBC SQL/DML Execution Inspector | Live CRUD actions in UI/Terminal & DML queries with timings |
 
 ---
 
-## 🗣️ Speaker 1: Introduction, Motivation & System Architecture
-**⏱️ Target Time:** 2.5 Minutes  
-**🎬 Cue:** Present the Title Slide & System Architecture Diagram
+## 🗣️ Speaker 1: Introduction, Architecture & Database Authentication
+**⏱️ Duration:** ~2.5 Minutes  
+**🎬 Cue:** Launch the application (`./run.sh --gui` or `./run.sh --demo`) and show the **Login Screen**.
 
-### 🎙️ Dialogue / Spoken Script:
+### 🎙️ Spoken Script:
 
-> "Good morning, respected professors, evaluators, and colleagues.
+> "Good morning, respected evaluators and fellow colleagues.
 > 
-> Today, our team is proud to present **FinCore**, an enterprise-grade banking engine developed as our Capstone Project. 
+> Today, our team is proud to present **FinCore**, an enterprise-grade Banking and Finance Management System developed as our Object-Oriented Programming and Database Management Systems Capstone Project.
 > 
-> When designing financial software, two foundational pillars determine whether a system succeeds or fails:
-> 1. **Robust Software Architecture**, powered by Object-Oriented Programming (OOP) to model complex real-world financial entities.
-> 2. **Data Integrity & Consistency**, powered by a Relational Database Management System (DBMS) capable of enforcing strict ACID guarantees.
+> In modern financial software engineering, two foundational pillars are required:
+> 1. **Robust Object-Oriented Architecture** to model complex real-world financial entities cleanly and securely.
+> 2. **Relational Database Integrity & Performance** powered by a DBMS such as **Oracle 10g XE**, guaranteeing strict ACID consistency and relational constraints.
 > 
-> In traditional academic projects, OOP code and DBMS operations are often disconnected—data is either stored in flat files or treated with primitive SQL scripts that ignore race conditions and data anomalies. 
+> Too often in academic projects, OOP models and DBMS queries are isolated. In FinCore, we have seamlessly unified them into an enterprise **3-Tier Architecture**:
+> - **The Presentation Tier:** Built using **Java Swing** (`JFrame`, `JTabbedPane`, `JTable`), providing an intuitive graphical dashboard, paired with a robust terminal CLI and automated demonstration runner.
+> - **The Business Service Tier:** Encapsulating core banking logic, validation rules, session handling, and transaction boundaries.
+> - **The Data Access Repository Tier:** Employing the Repository Pattern and pure **JDBC** with 100% parameterized `PreparedStatements` to guarantee zero SQL injection risk.
+> - **The Relational DBMS Engine:** Fully compatible with **Oracle 10g Express Edition (XE)** using sequences and triggers, with built-in zero-config SQLite support for seamless portability.
 > 
-> In **FinCore**, we bridged this gap completely. We built a 3-tier enterprise architecture consisting of:
-> - **The Presentation Layer:** An interactive, ANSI-colored terminal CLI and an automated demo runner.
-> - **The Business Service Layer:** Where business logic, domain validation, and ACID transaction boundaries are enforced.
-> - **The Data Access (Repository) Layer:** Featuring generic CRUD abstractions and parameterized JDBC implementations that eliminate SQL injection.
-> - **The Relational Storage Engine:** Supporting embedded, zero-configuration SQLite for development and instant portability, as well as production-ready MySQL through standard properties configuration.
+> To demonstrate this, let us look at our first requirement: **Database-Backed Authentication**.
 > 
-> At the core of our user domain, we implemented **OOP Abstraction and Encapsulation**. The abstract base class `User` encapsulates common credentials, contact information, and audit metadata with strict input validation. It is extended into distinct user roles: retail `Customer`s and banking `Admin`s, enforcing role segregation.
+> *(Speaker 1 points to the Login Screen)*
 > 
-> Now, I will hand over to **Speaker 2**, who will walk us through how we utilized Inheritance, Polymorphism, and Domain Modeling."
+> Instead of hardcoding credentials, FinCore authenticates users directly against the relational database `users` table. When an operator enters their username and password, our `AuthService` executes a parameterized SQL query:
+> 
+> ```sql
+> SELECT id, username, password, full_name, role, status, created_at 
+> FROM users WHERE username = ? AND password = ? AND status = 'ACTIVE';
+> ```
+> 
+> If an attacker supplies an invalid password or non-existent username, our system immediately intercepts the failure, logs the incident to `audit_logs`, and rejects access. When we authenticate with valid credentials—such as our seeded Administrator `admin` / `admin123`—the system retrieves the operator's security profile and launches our main Finance Dashboard.
+> 
+> Now, I will pass the floor to **Speaker 2**, who will walk us through how we applied Object-Oriented Principles to model our banking domain."
 
 ---
 
 ## 🗣️ Speaker 2: OOP Principles (Encapsulation, Inheritance & Polymorphism)
-**⏱️ Target Time:** 2.5 Minutes  
-**🎬 Cue:** Switch to UML Class Diagram (see `docs/ERD_AND_UML.md`) & Code Snippets of `Account`, `SavingsAccount`, and `CheckingAccount`
+**⏱️ Duration:** ~2.5 Minutes  
+**🎬 Cue:** Display the UML Class Diagram (from `docs/ERD_AND_UML.md`) and code snippets of `Account`, `SavingsAccount`, and `CheckingAccount`.
 
-### 🎙️ Dialogue / Spoken Script:
+### 🎙️ Spoken Script:
 
 > "Thank you, Speaker 1.
 > 
-> In FinCore, Object-Oriented Programming is not just theory—it actively governs how money moves and how financial rules are enforced.
+> In FinCore, Object-Oriented Programming is not merely an academic checklist—it directly dictates how money moves and how financial business rules are enforced.
 > 
-> Let's look at our account hierarchy:
+> We incorporated four major OOP tenets:
 > 
 > 1. **Encapsulation:**
->    In our `Account` base class, all sensitive fields—such as account balance, customer ID, and account status—are strictly `private`. The balance cannot be modified arbitrarily from outside. It can only change through the synchronized `deposit()` and `withdraw()` domain methods, which enforce critical invariants such as rejecting negative amounts and verifying account status.
+>    In our `Account` class, all core attributes—including `balance`, `customerId`, and `status`—are strictly `private`. Outside components cannot directly mutate balances. Instead, state transitions occur exclusively through synchronized business methods: `deposit()` and `withdraw()`, which enforce domain invariants like rejecting negative amounts or operating on frozen accounts.
 > 
 > 2. **Inheritance:**
->    We established an abstract class `Account`, and derived two specialized account types:
->    - `SavingsAccount`, which models wealth accumulation.
->    - `CheckingAccount`, which models everyday liquidity and transactional overdrafts.
+>    We designed an abstract base class `Account` which provides common banking logic and encapsulates account identifiers and audit timestamps. From this base, we extended two distinct account types:
+>    - `SavingsAccount`, which models wealth accumulation and long-term deposits.
+>    - `CheckingAccount`, which models commercial liquidity and transaction overdrafts.
 > 
-> 3. **Polymorphism (Runtime Dynamic Binding):**
->    We declared two key abstract polymorphic contracts in `Account`:
->    - `canWithdraw(double amount)`
->    - `calculateMonthlyInterestOrFee()`
+> 3. **Runtime Polymorphism (Dynamic Method Dispatch):**
+>    We defined two core polymorphic method contracts on `Account`:
+>    - `public abstract boolean canWithdraw(double amount);`
+>    - `public abstract double calculateMonthlyInterestOrFee();`
 > 
->    Notice how dynamic dispatch behaves differently for each subclass:
->    - In **`SavingsAccount`**, the withdrawal logic enforces a mandatory **Minimum Balance** (for example, $50.00). If a withdrawal would drop the account below this threshold, it is rejected. When month-end batch processing occurs, `calculateMonthlyInterestOrFee()` returns a **positive interest credit** calculated from the account's Annual Percentage Rate (APR).
->    - In contrast, in **`CheckingAccount`**, `canWithdraw()` permits the customer to draw funds beyond their balance up to an authorized **Overdraft Credit Limit** (e.g., $1,000.00). In month-end processing, it returns a **negative monthly maintenance fee**.
+>    At runtime, Java executes the subclass implementation dynamically:
+>    - In **`SavingsAccount`**, withdrawals enforce a strict **Minimum Balance** (e.g. $50.00). If a withdrawal would breach this limit, it is rejected. During monthly batch processing, it calculates a **positive interest credit** based on its Annual Percentage Rate (APR).
+>    - In **`CheckingAccount`**, the customer is permitted to withdraw beyond their balance up to an authorized **Overdraft Credit Limit** (e.g. $1,000.00). During monthly batch runs, it deducts a **monthly maintenance fee**.
 > 
-> 4. **Polymorphic Hydration from Database:**
->    In our JDBC repository layer, when records are read from the database, our factory inspects the `account_type` column and polymorphically instantiates either a `SavingsAccount` or `CheckingAccount` object. Business services operate solely against the generic `Account` reference without needing to know concrete types.
+> 4. **Polymorphic Database Hydration:**
+>    When reading records from the relational DBMS via JDBC, our repository inspects the `account_type` column and polymorphically instantiates the correct subclass. The higher-level business services interact solely with generic `Account` references, adhering to the Open/Closed Principle.
 > 
-> Next, **Speaker 3** will explain how the relational database schema and DBMS ACID transactions safeguard financial integrity."
+> Now, **Speaker 3** will present our relational DBMS architecture, Oracle 10g XE schema design, and ACID transaction guarantees."
 
 ---
 
-## 🗣️ Speaker 3: DBMS Architecture, Schema Design & ACID Transactions
-**⏱️ Target Time:** 3 Minutes  
-**🎬 Cue:** Switch to Entity-Relationship (ER) Diagram & ACID Sequence Diagram (see `docs/ERD_AND_UML.md`)
+## 🗣️ Speaker 3: DBMS Architecture, Oracle 10g XE & ACID Transactions
+**⏱️ Duration:** ~3.0 Minutes  
+**🎬 Cue:** Display the Entity-Relationship (ER) Diagram and demonstrate the ACID Transfer Commit and Rollback.
 
-### 🎙️ Dialogue / Spoken Script:
+### 🎙️ Spoken Script:
 
 > "Thank you, Speaker 2.
 > 
-> Now let's examine the Database Management System (DBMS) layer of FinCore.
+> Let us now inspect the relational database architecture powering FinCore.
 > 
-> Financial databases require uncompromising integrity. Our relational schema is designed with 4 normalized tables:
-> 1. `customers`: Stores user profile data with `UNIQUE` email and customer code constraints.
-> 2. `accounts`: Tied to `customers` via a Foreign Key with `ON DELETE CASCADE`. It incorporates database-level `CHECK` constraints to guarantee valid account types and enforce maximum overdraft boundaries.
-> 3. `transactions`: An immutable double-entry ledger recording deposits, withdrawals, and inter-account transfers.
-> 4. `audit_logs`: A regulatory audit trail capturing who performed every action, the timestamp, and the before-and-after entity details.
+> When dealing with banking and ledger systems, database design must eliminate anomalies and prevent data loss. Our relational schema comprises 7 core tables:
+> 1. `users`: Stores authenticated operators with unique usernames and role designations.
+> 2. `customers`: Contains customer master data with `UNIQUE` email and customer codes.
+> 3. `accounts`: Linked to `customers` via Foreign Key with cascading updates and deletes.
+> 4. `transactions`: An immutable double-entry ledger recording deposits, withdrawals, and inter-account transfers.
+> 5. `financial_records`: The repository for all revenue income and expenditure records.
+> 6. `budgets`: Category allocation limits used for budget tracking.
+> 7. `audit_logs`: A regulatory audit trail capturing every sensitive action, operator, and timestamp.
 > 
-> **ACID Transactions in Action:**
-> The greatest test of a banking system is an inter-account fund transfer. If money is deducted from Account A, but a failure occurs before it is credited to Account B, money would vanish into thin air.
+> ### Oracle 10g XE Database Design:
+> To ensure compatibility with **Oracle 10g Express Edition**, we engineered dialect-specific SQL scripts (`schema-oracle10g.sql` and `seed-oracle10g.sql`):
+> - Primary keys are generated using Oracle **Sequences** (`seq_users`, `seq_fin_records`, etc.) paired with `BEFORE INSERT` triggers.
+> - Monetary columns are typed as `NUMBER(15,2)` for exact precision, avoiding floating-point rounding errors.
+> - Text fields use `VARCHAR2`.
+> - The Oracle JDBC driver `ojdbc11` is configured in our Maven POM.
 > 
-> In FinCore, we solve this using explicit DBMS transaction management in `BankingService`:
-> 1. We disable auto-commit via `connection.setAutoCommit(false)`, establishing a transaction boundary.
-> 2. We retrieve both accounts and execute polymorphic overdraft and balance checks.
-> 3. We execute both updates—debiting the source account and crediting the destination account.
-> 4. We record two matching ledger entries in the `transactions` table (a `TRANSFER_OUT` and a `TRANSFER_IN`).
-> 5. We record an audit log entry.
-> 6. Only when all operations succeed do we issue `connection.commit()`, ensuring **Atomicity and Durability**.
+> ### ACID Transactions:
+> The most critical requirement in banking is **ACID compliance** (Atomicity, Consistency, Isolation, Durability).
 > 
-> **Rollback Protection:**
-> If an exception occurs at any point—whether due to insufficient funds, an inactive account, or a database glitch—the entire operation is trapped in a `catch` block that immediately executes `connection.rollback()`.
+> Consider an inter-account fund transfer: Account A transfers $1,500 to Account B. This requires 4 coordinated database operations:
+> 1. Deduct $1,500 from Account A.
+> 2. Credit $1,500 to Account B.
+> 3. Insert `TRANSFER_OUT` record in transactions.
+> 4. Insert `TRANSFER_IN` record in transactions.
 > 
-> In our automated tests, we deliberately attempted illegal overdraft transfers of $50,000. The DBMS rolled back instantly: zero cents were lost, and balances remained 100% consistent.
+> In `BankingService.java`, we manage transaction boundaries explicitly using JDBC:
+> ```java
+> conn.setAutoCommit(false); // Begin ACID Transaction
+> ```
+> If any step fails—for example, if Account A lacks sufficient funds or the database experiences a network timeout—the catch block invokes:
+> ```java
+> conn.rollback(); // Restore pristine initial state
+> ```
+> This guarantees **Atomicity**: either all updates succeed completely, or none occur at all. Not a single cent is ever lost or created out of thin air.
 > 
-> Additionally, 100% of our SQL statements utilize parameterized `PreparedStatement`s, ensuring complete immunity to SQL Injection attacks.
-> 
-> I will now turn the stage to **Speaker 4** to present our analytical SQL queries, test suite, and live demonstration."
+> I now hand over to **Speaker 4**, who will demonstrate our Java Swing Finance Dashboard and walk through the complete CRUD lifecycle with live SQL execution."
 
 ---
 
-## 🗣️ Speaker 4: Relational Analytics, Verification & Live Demo
-**⏱️ Target Time:** 2.5 – 3 Minutes  
-**🎬 Cue:** Switch to Terminal Screen (`./run.sh --demo` or `./run.sh --test`)
+## 🗣️ Speaker 4: Finance Dashboard, Complete CRUD Demonstration & Live SQL Trace
+**⏱️ Duration:** ~3.0 Minutes  
+**🎬 Cue:** Switch to the active **Finance Dashboard** in Java Swing (or terminal output of `Step 4: CRUD Module`) showing the CRUD table and the bottom **Live JDBC SQL/DML Inspector Panel**.
 
-### 🎙️ Dialogue / Spoken Script:
+### 🎙️ Spoken Script:
 
 > "Thank you, Speaker 3.
 > 
-> Beyond transactions, modern banking requires deep relational business intelligence.
+> Now, let us explore the **Finance Dashboard** and demonstrate our **Complete CRUD Module** in action.
 > 
-> **Advanced SQL Joins and Aggregations:**
-> In `ReportService`, we implemented complex multi-table SQL queries utilizing `LEFT JOIN`, `SUM`, `COUNT`, and `GROUP BY`. 
+> *(Speaker 4 navigates the Java Swing Dashboard)*
 > 
-> Rather than naive multi-table joins that suffer from Cartesian product fan-out, our query uses pre-aggregated subqueries to calculate:
-> - Total active accounts per customer.
-> - Exact consolidated net balance across savings and checking portfolios.
-> - Total historical transactions.
-> - Global bank liquidity, calculating total deposits and breakdown pools between savings and checking.
+> As you can see, our dashboard provides comprehensive visibility into all financial operations:
+> - **Tab 1: Dashboard Overview:** Real-time summary metric cards displaying Total Account Liquidity ($56,943.90), Total Income ($9,650.00), Total Expenses ($2,470.50), and Net Cash Flow ($7,179.50).
+> - **Tab 2: Income & Expenses (The CRUD Module):** Interactive data grid for managing financial records.
+> - **Tab 3: Accounts:** All savings and checking accounts with APR and overdraft limits.
+> - **Tab 4: Budget Tracker:** Relational join calculating spent amounts against monthly limits in real time.
+> - **Tab 5: Transactions Ledger:** Full double-entry audit history.
+> - **Tab 6: Financial Reports:** Category spending breakdown and expense distribution.
+> - **At the bottom of the screen:** Notice our **Live JDBC SQL & DML Execution Inspector**. Every query executed by the application is captured in real-time with its execution time in milliseconds and affected row count!
 > 
-> **Testing and Verification:**
-> To guarantee production reliability, we implemented a comprehensive **JUnit 5** test suite:
-> - Unit tests verifying polymorphic minimum balance and overdraft calculations.
-> - Integration tests verifying that ACID transfers commit correctly and rollback cleanly under failure.
-> - Repository tests verifying CRUD persistence and relational JOIN reporting against an isolated test database.
+> ### Live Demonstration of the Complete CRUD Module:
 > 
-> *(Speaker 4 switches to terminal and runs `./run.sh --demo`)*
+> Watch as we perform the complete 4-step CRUD lifecycle on financial records:
 > 
-> As you can see on screen:
-> - Step 1 verifies runtime polymorphism.
-> - Step 2 creates relational records in the database.
-> - Step 3 executes an ACID funds transfer and commits atomically.
-> - Step 4 simulates an invalid transfer: the system catches the domain exception and executes a clean database rollback.
-> - Step 5 runs batch interest accrual for savings and fee deduction for checking.
-> - Step 6 generates our live Customer Portfolio Report and Liquidity Metrics.
+> 1. **INSERT (Create Record):**
+>    - We click `➕ Add Record (INSERT)`.
+>    - We select `EXPENSE`, category `Software Licenses`, amount `$450.00`, account `CHK-100102`, and memo `Oracle 10g XE Cluster Upgrade`.
+>    - When we click Save, the system executes:
+>      ```sql
+>      INSERT INTO financial_records 
+>      (record_type, category, amount, account_number, description, record_date) 
+>      VALUES (?, ?, ?, ?, ?, ?);
+>      ```
+>    - The database generates a new Primary Key—Record #8—and logs the DML operation in under 2 milliseconds.
 > 
-> **Conclusion:**
-> FinCore proves how Object-Oriented software engineering and Database Management Systems complement one another to build robust, scalable, and secure financial software.
+> 2. **SELECT (Read & Display):**
+>    - The table immediately refreshes using:
+>      ```sql
+>      SELECT id, record_type, category, amount, account_number, description, record_date 
+>      FROM financial_records WHERE id = 8;
+>      ```
+>    - The new record is displayed cleanly in the JTable, and overview metric cards update synchronously.
 > 
-> The entire project is packaged with Maven, fully documented on GitHub, and ready for deployment.
+> 3. **UPDATE (Edit Record):**
+>    - We select Record #8 and click `✏️ Edit Record (UPDATE)`.
+>    - We adjust the amount from `$450.00` to `$585.50` and append `+ NVMe Storage` to the description.
+>    - The system executes:
+>      ```sql
+>      UPDATE financial_records 
+>      SET amount = ?, description = ? 
+>      WHERE id = ?;
+>      ```
+>    - The table reflects the updated amount, and our budget calculation dynamically recalibrates.
 > 
-> Thank you, and we now welcome any questions from the panel!"
+> 4. **DELETE (Remove Record):**
+>    - Finally, we select the record and click `🗑️ Delete Record (DELETE)`.
+>    - A confirmation dialog verifies our intent, executing:
+>      ```sql
+>      DELETE FROM financial_records WHERE id = 8;
+>      ```
+>    - The record is purged from the database, and subsequent `SELECT` queries confirm that 0 rows exist for that ID.
+> 
+> ### Conclusion & Verification:
+> In summary, FinCore satisfies all academic and enterprise specifications:
+> - Full Object-Oriented Design (Encapsulation, Inheritance, Polymorphism).
+> - Relational Database Management with Oracle 10g XE compatibility.
+> - Database-backed Authentication with audit trails.
+> - An interactive Java Swing graphical dashboard with a real-time SQL execution inspector.
+> - Complete and verified CRUD operations backed by 14 automated unit and integration tests.
+> 
+> Thank you very much for your time and attention. We now welcome questions from the evaluation panel."
 
 ---
 
-## 🎯 Evaluator Q&A Cheat Sheet (Prepared Answers for the Team)
+## 🎯 Quick Presentation Tips & Q&A Preparation
 
-### Q1: "Why did you choose SQLite by default instead of MySQL or PostgreSQL?"
-> **Answer (Speaker 1 or 3):**  
-> *"We designed the system with database portability in mind. SQLite is built into our configuration as the zero-dependency embedded default, meaning anyone evaluating the project can clone it and run `./run.sh` without configuring local database daemons or credentials. However, our `DatabaseConfig` and `DatabaseManager` follow the Factory pattern—by changing a single line in `db.properties` (`db.type=mysql`), the application seamlessly connects to an enterprise MySQL server with InnoDB engine support."*
+### 1. How to run the demo during the presentation:
+```bash
+# Option A: Run automated verification showcase in terminal
+./run.sh --demo
 
-### Q2: "How does your code prevent SQL Injection?"
-> **Answer (Speaker 3):**  
-> *"We avoid raw string concatenation in SQL queries. Every single query across our JDBC repositories uses `PreparedStatement` with parameterized placeholders (`?`). The JDBC driver handles type checking and escaping at the protocol level, making SQL injection impossible."*
+# Option B: Run Java Swing graphical GUI (with Login and Dashboard)
+./run.sh --gui
 
-### Q3: "How is Polymorphism demonstrated in your database integration?"
-> **Answer (Speaker 2):**  
-> *"When hydrating accounts from the `accounts` table in `JdbcAccountRepository`, our code checks the `account_type` discriminator column. If it is `SAVINGS`, it instantiates a `SavingsAccount` with its specific APR; if it is `CHECKING`, it instantiates a `CheckingAccount` with its overdraft limit. High-level services interact solely with the base `Account` interface, invoking polymorphic methods like `canWithdraw()` and `calculateMonthlyInterestOrFee()` at runtime."*
+# Option C: Run interactive console menu
+./run.sh --cli
+```
 
-### Q4: "What happens if the power cuts or a server crashes halfway through a transfer?"
-> **Answer (Speaker 3):**  
-> *"Because we set `connection.setAutoCommit(false)`, the DBMS logs intermediate updates in its Write-Ahead Log (WAL/journal). If a crash occurs before `connection.commit()` is issued, the database automatically performs crash recovery upon reboot, rolling back uncommitted changes and guaranteeing that the database returns to a consistent, uncorrupted state."*
+### 2. Common Evaluator Questions & Recommended Answers:
+- **Q: Why did you use `PreparedStatement` instead of `Statement`?**  
+  *Answer:* `PreparedStatement` pre-compiles SQL queries on the database server and parameterizes input values, completely preventing SQL Injection attacks and improving execution performance.
+- **Q: How does Oracle 10g XE handle auto-incrementing primary keys?**  
+  *Answer:* Oracle 10g XE utilizes database `SEQUENCE` objects (e.g., `seq_fin_records.NEXTVAL`) combined with `BEFORE INSERT` triggers to assign unique identifiers.
+- **Q: Where is Polymorphism demonstrated in code?**  
+  *Answer:* In `Account.java`, subclasses `SavingsAccount` and `CheckingAccount` override `canWithdraw()` (minimum balance vs. overdraft allowance) and `calculateMonthlyInterestOrFee()` (APR interest vs. maintenance fees).

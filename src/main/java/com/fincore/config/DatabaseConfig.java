@@ -7,6 +7,7 @@ import java.util.Properties;
 /**
  * Singleton configuration manager for database properties.
  * Reads configurations from db.properties and provides database connection metadata.
+ * Supports Oracle 10g XE, SQLite, and MySQL.
  */
 public class DatabaseConfig {
 
@@ -44,22 +45,64 @@ public class DatabaseConfig {
 
     public String getJdbcUrl() {
         String type = getDbType();
-        if ("mysql".equals(type)) {
+        if ("oracle".equals(type)) {
+            return properties.getProperty("oracle.url", "jdbc:oracle:thin:@localhost:1521:xe");
+        } else if ("mysql".equals(type)) {
             return properties.getProperty("mysql.url", "jdbc:mysql://localhost:3306/fincore_db");
         }
         return properties.getProperty("sqlite.url", "jdbc:sqlite:fincore_banking.db");
     }
 
+    public String getDbUrl() {
+        return getJdbcUrl();
+    }
+
+    public String getDriverClass() {
+        String type = getDbType();
+        if ("oracle".equals(type)) {
+            return "oracle.jdbc.OracleDriver";
+        } else if ("mysql".equals(type)) {
+            return "com.mysql.cj.jdbc.Driver";
+        }
+        return "org.sqlite.JDBC";
+    }
+
     public String getDbUser() {
-        return properties.getProperty("mysql.user", "root");
+        String type = getDbType();
+        if ("oracle".equals(type)) {
+            return properties.getProperty("oracle.user", "system");
+        } else if ("mysql".equals(type)) {
+            return properties.getProperty("mysql.user", "root");
+        }
+        return "";
     }
 
     public String getDbPassword() {
-        return properties.getProperty("mysql.password", "");
+        String type = getDbType();
+        if ("oracle".equals(type)) {
+            return properties.getProperty("oracle.password", "oracle");
+        } else if ("mysql".equals(type)) {
+            return properties.getProperty("mysql.password", "");
+        }
+        return "";
     }
 
     public String getSchemaFile() {
-        return "mysql".equals(getDbType()) ? "schema-mysql.sql" : "schema-sqlite.sql";
+        String type = getDbType();
+        if ("oracle".equals(type)) {
+            return "schema-oracle10g.sql";
+        } else if ("mysql".equals(type)) {
+            return "schema-mysql.sql";
+        }
+        return "schema-sqlite.sql";
+    }
+
+    public String getSeedFile() {
+        String type = getDbType();
+        if ("oracle".equals(type)) {
+            return "seed-oracle10g.sql";
+        }
+        return "seed.sql";
     }
 
     public String getProperty(String key, String defaultValue) {

@@ -1,31 +1,47 @@
 # 📊 FinCore: ER Diagram, UML Class Diagrams & Architectural Design
 
-This document contains complete system diagrams, entity-relationship models, UML class hierarchies, sequence diagrams, and the database schema data dictionary for the **FinCore Banking System Capstone Project**.
+This document contains complete system diagrams, entity-relationship models, UML class hierarchies, sequence diagrams, and the database schema data dictionary for the **FinCore Banking & Finance System Capstone Project**.
 
 ---
 
 ## 📑 Table of Contents
 1. [Entity-Relationship (ER) Diagram](#1-entity-relationship-erd-diagram)
 2. [UML Class Diagram (OOP Architecture)](#2-uml-class-diagram-oop-architecture)
-3. [ACID Transaction Sequence Diagram](#3-acid-transaction-sequence-diagram)
-4. [3-Tier System Architecture Diagram](#4-3-tier-system-architecture-diagram)
-5. [Database Data Dictionary & Relational Specification](#5-database-data-dictionary)
+3. [Java Swing GUI Component Hierarchy](#3-java-swing-gui-component-hierarchy)
+4. [CRUD Module & Real-time SQL Lifecycle](#4-crud-module--real-time-sql-lifecycle)
+5. [ACID Transaction Sequence Diagram](#5-acid-transaction-sequence-diagram)
+6. [3-Tier System Architecture Diagram](#6-3-tier-system-architecture-diagram)
+7. [Database Data Dictionary & Relational Specification](#7-database-data-dictionary)
+8. [Oracle 10g XE Configuration & Sequences](#8-oracle-10g-xe-configuration--sequences)
 
 ---
 
 ## 1. Entity-Relationship (ER) Diagram
 
-The following diagram models the relational schema, cardinality, primary keys (`PK`), foreign keys (`FK`), and attributes.
+The following diagram models the complete relational schema, foreign key relationships, cardinalities, and attributes for **Oracle 10g XE** / SQLite:
 
 ```mermaid
 erDiagram
+    USERS ||--o{ AUDIT_LOGS : "logs sessions (1:N)"
     CUSTOMERS ||--o{ ACCOUNTS : "owns (1:N)"
     ACCOUNTS ||--o{ TRANSACTIONS : "generates (1:N)"
+    ACCOUNTS ||--o{ FINANCIAL_RECORDS : "linked account (1:N)"
     CUSTOMERS ||--o{ AUDIT_LOGS : "triggers actions (1:N)"
+    BUDGETS ||--o{ FINANCIAL_RECORDS : "tracks spending (1:N)"
+
+    USERS {
+        BIGINT id PK "Auto Increment / Sequence"
+        VARCHAR username UK "Unique Login Handle"
+        VARCHAR password "Hashed / Secured Password"
+        VARCHAR full_name "User Full Name"
+        VARCHAR role "ADMIN / FINANCE_OFFICER / USER"
+        VARCHAR status "ACTIVE / SUSPENDED"
+        TIMESTAMP created_at "Account Creation Timestamp"
+    }
 
     CUSTOMERS {
-        BIGINT id PK "Auto Increment"
-        VARCHAR customer_code UK "Unique Identifier"
+        BIGINT id PK "Auto Increment / Sequence"
+        VARCHAR customer_code UK "Unique Identifier (e.g. CUST-1001)"
         VARCHAR name "Full Name"
         VARCHAR email UK "Unique Email Address"
         VARCHAR phone "Contact Number"
@@ -35,10 +51,10 @@ erDiagram
     }
 
     ACCOUNTS {
-        VARCHAR account_number PK "Unique Account Number"
+        VARCHAR account_number PK "Unique Account Code (e.g. SAV-100101)"
         BIGINT customer_id FK "References CUSTOMERS(id)"
         VARCHAR account_type "SAVINGS / CHECKING"
-        DECIMAL balance "Current Balance"
+        DECIMAL balance "Current Available Balance"
         DECIMAL interest_rate "Annual APR (for Savings)"
         DECIMAL overdraft_limit "Credit Allowance (for Checking)"
         VARCHAR status "ACTIVE / FROZEN / CLOSED"
@@ -46,7 +62,7 @@ erDiagram
     }
 
     TRANSACTIONS {
-        BIGINT id PK "Auto Increment"
+        BIGINT id PK "Auto Increment / Sequence"
         VARCHAR transaction_id UK "UUID Reference"
         VARCHAR account_number FK "References ACCOUNTS(account_number)"
         VARCHAR type "DEPOSIT / WITHDRAWAL / TRANSFER_OUT / TRANSFER_IN"
@@ -57,8 +73,26 @@ erDiagram
         TIMESTAMP created_at "Execution Timestamp"
     }
 
+    FINANCIAL_RECORDS {
+        BIGINT id PK "Auto Increment / Sequence"
+        VARCHAR record_type "INCOME / EXPENSE"
+        VARCHAR category "Salary, Housing, Groceries, Cloud, etc."
+        DECIMAL amount "Monetary Value (>0)"
+        VARCHAR account_number FK "References ACCOUNTS(account_number)"
+        VARCHAR description "User Description / Memo"
+        DATE record_date "Date of Income/Expense"
+        TIMESTAMP created_at "Record Timestamp"
+    }
+
+    BUDGETS {
+        BIGINT id PK "Auto Increment / Sequence"
+        VARCHAR category UK "Unique Category Name"
+        DECIMAL monthly_limit "Allocated Budget Limit ($)"
+        TIMESTAMP created_at "Creation Timestamp"
+    }
+
     AUDIT_LOGS {
-        BIGINT id PK "Auto Increment"
+        BIGINT id PK "Auto Increment / Sequence"
         VARCHAR action "SYSTEM Action Code"
         VARCHAR entity_type "Target Entity Name"
         VARCHAR entity_id "Target Entity Key"
@@ -69,15 +103,15 @@ erDiagram
 ```
 
 ### Relational Integrity Rules:
-* **One-to-Many (`1:N`) Customers to Accounts**: A customer can maintain multiple bank accounts (e.g., Savings and Checking), but each account belongs to exactly one customer (`ON DELETE CASCADE`).
-* **One-to-Many (`1:N`) Accounts to Transactions**: An account generates multiple ledger movements, but each transaction entry strictly belongs to one primary account.
-* **Auditability**: All state mutations generate append-only logs in `audit_logs`.
+* **One-to-Many (`1:N`) Customers to Accounts**: A customer can hold multiple accounts (Savings and Checking), cascading deletions (`ON DELETE CASCADE`).
+* **One-to-Many (`1:N`) Accounts to Transactions**: Every transaction belongs to an authorized account.
+* **One-to-Many (`1:N`) Accounts to Financial Records**: Every income or expense entry links to a valid bank account.
+* **Budget Tracking via SQL JOINs**: Monthly expenditures per category are calculated on the fly by joining `budgets` with `financial_records`.
+* **Database-Backed Authentication**: The `users` table authenticates operators via parameterized SQL `SELECT` queries before granting access to the system.
 
 ---
 
 ## 2. UML Class Diagram (OOP Architecture)
-
-This diagram illustrates **Abstraction**, **Inheritance**, **Polymorphism**, and **Dependency Inversion** between the Presentation, Service, Repository, and Model layers.
 
 ```mermaid
 classDiagram
@@ -108,6 +142,19 @@ classDiagram
         -int clearanceLevel
         +getRoleDescription() String
         +getDepartment() String
+    }
+
+    class AuthUser {
+        -Long id
+        -String username
+        -String password
+        -String fullName
+        -String role
+        -String status
+        -LocalDateTime createdAt
+        +getId() Long
+        +getUsername() String
+        +getRole() String
     }
 
     User <|-- Customer : Extends
@@ -151,7 +198,30 @@ classDiagram
     Account <|-- SavingsAccount : Implements (APR & Min Bal)
     Account <|-- CheckingAccount : Implements (Overdraft & Fee)
 
-    %% Repository Contracts
+    %% Financial Records & Budget
+    class FinancialRecord {
+        -Long id
+        -Type recordType
+        -String category
+        -double amount
+        -String accountNumber
+        -String description
+        -LocalDate recordDate
+        +getId() Long
+        +getAmount() double
+    }
+
+    class Budget {
+        -Long id
+        -String category
+        -double monthlyLimit
+        -double spentAmount
+        +getRemainingAmount() double
+        +getPercentageUsed() double
+        +isExceeded() boolean
+    }
+
+    %% Repositories
     class CrudRepository~T, ID~ {
         <<interface>>
         +save(T entity) T
@@ -161,54 +231,101 @@ classDiagram
         +deleteById(ID id) boolean
     }
 
-    class CustomerRepository {
+    class FinancialRecordRepository {
         <<interface>>
-        +findByCustomerCode(String code) Optional~Customer~
-        +getCustomerPortfolioSummaries() List~CustomerSummaryDTO~
+        +findByType(Type type) List~FinancialRecord~
+        +getTotalIncome() double
+        +getTotalExpenses() double
+        +getCategoryBreakdown(Type type) Map~String, Double~
     }
 
-    class AccountRepository {
+    class UserRepository {
         <<interface>>
-        +findByAccountNumber(String accNum) Optional~Account~
-        +findByCustomerId(Long customerId) List~Account~
-        +updateBalance(Connection conn, String accNum, double bal) boolean
+        +authenticate(String user, String pass) Optional~AuthUser~
+        +findByUsername(String user) Optional~AuthUser~
     }
 
-    CrudRepository <|-- CustomerRepository
-    CrudRepository <|-- AccountRepository
+    CrudRepository <|-- FinancialRecordRepository
+    CrudRepository <|-- UserRepository
 
-    %% Service Layer
-    class BankingService {
-        -DatabaseManager dbManager
-        -AccountRepository accountRepo
-        -TransactionRepository txRepo
+    %% Services
+    class AuthService {
+        -UserRepository userRepo
         -AuditLogRepository auditRepo
-        +deposit(String accNum, double amount, String memo) Transaction
-        +withdraw(String accNum, double amount, String memo) Transaction
-        +transferFunds(String from, String to, double amt, String memo) void
-        +processMonthlyAdjustments() void
+        +login(String user, String pass) AuthUser
+        +logout() void
+        +getCurrentUser() AuthUser
     }
 
-    BankingService --> AccountRepository : Uses
-    BankingService --> Account : Manipulates polymorphically
+    class FinanceService {
+        -FinancialRecordRepository finRecordRepo
+        -BudgetRepository budgetRepo
+        -AccountRepository accountRepo
+        +addRecord(...) FinancialRecord
+        +updateRecord(...) boolean
+        +deleteRecord(Long id) boolean
+        +getTotalAccountBalances() double
+        +getAllBudgetsWithSpending() List~Budget~
+    }
+
+    AuthService --> UserRepository : Uses
+    FinanceService --> FinancialRecordRepository : Executes CRUD
 ```
 
 ---
 
-## 3. ACID Transaction Sequence Diagram
+## 3. Java Swing GUI Component Hierarchy
+
+```mermaid
+graph TD
+    subgraph Presentation Layer (Java Swing)
+        Main[Main.java Bootstrap] -->|Launches| LoginFrame[LoginFrame: DB Authentication]
+        LoginFrame -->|Credentials Valid| Dashboard[FinanceDashboardFrame: Main App]
+        
+        Dashboard --> Tab1[Tab 1: 📊 Dashboard Overview Cards]
+        Dashboard --> Tab2[Tab 2: 💰 Income & Expenses CRUD Table]
+        Dashboard --> Tab3[Tab 3: 🏦 Accounts Overview]
+        Dashboard --> Tab4[Tab 4: 🎯 Budget Tracker]
+        Dashboard --> Tab5[Tab 5: 📜 Transactions Ledger]
+        Dashboard --> Tab6[Tab 6: 📈 Financial Reports]
+        
+        Tab2 -->|➕ Add / ✏️ Edit| Dialog[RecordDialog: INSERT / UPDATE Modal]
+        
+        Dashboard --> SqlConsole[🖥️ Live JDBC SQL/DML Inspector Panel]
+    end
+    
+    subgraph Observer Pattern
+        DBMgr[DatabaseManager] -->|SqlListener Events| SqlConsole
+    end
+```
+
+---
+
+## 4. CRUD Module & Real-time SQL Lifecycle
+
+| CRUD Step | User Action in UI | JDBC Operation | Generated SQL / DML Syntax | Result / Verification |
+|---|---|---|---|---|
+| **INSERT (Create)** | Click `➕ Add Record` $\to$ Enter Category, Amount, Account, Memo $\to$ Save | `PreparedStatement.executeUpdate()` | `INSERT INTO financial_records (record_type, category, amount, account_number, description, record_date) VALUES (?, ?, ?, ?, ?, ?)` | Auto-generated PK `#ID` returned; row added to JTable |
+| **SELECT (Read)** | Select table tab / click `🔄 Refresh` / filter by Income or Expense | `PreparedStatement.executeQuery()` | `SELECT id, record_type, category, amount, account_number, description, record_date FROM financial_records WHERE id = ?` | Populates `DefaultTableModel`; rows displayed in UI |
+| **UPDATE (Edit)** | Select row in table $\to$ Click `✏️ Edit Record` $\to$ Modify amount/memo $\to$ Update | `PreparedStatement.executeUpdate()` | `UPDATE financial_records SET record_type=?, category=?, amount=?, account_number=?, description=?, record_date=? WHERE id=?` | Affected rows: 1; Table and Overview cards refreshed |
+| **DELETE (Remove)** | Select row in table $\to$ Click `🗑️ Delete Record` $\to$ Confirm prompt | `PreparedStatement.executeUpdate()` | `DELETE FROM financial_records WHERE id = ?` | Affected rows: 1; Row removed from DBMS and UI |
+
+---
+
+## 5. ACID Transaction Sequence Diagram
 
 This sequence diagram details the end-to-end execution of `BankingService.transferFunds()` demonstrating **DBMS Atomicity**, **Rollback protection**, and **Double-Entry Ledger recording**.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Client / CLI
+    actor User as Client / CLI / GUI
     participant Service as BankingService
     participant Conn as JDBC Connection
     participant AccRepo as AccountRepository
     participant TxRepo as TransactionRepository
     participant Audit as AuditLogRepository
-    participant DB as Relational Database
+    participant DB as Relational Database (Oracle / SQLite)
 
     User->>Service: transferFunds(FromAcc, ToAcc, $1500)
     Service->>Conn: setAutoCommit(false) [BEGIN TRANSACTION]
@@ -228,7 +345,7 @@ sequenceDiagram
     alt Insufficient Funds or Account Inactive
         Service->>Conn: rollback() [RESTORE INITIAL STATE]
         Service->>Conn: setAutoCommit(true)
-        Service-->>User: Throw InsufficientFundsException (0 funds deducted)
+        Service-->>User: Throw BankingException (Zero funds deducted)
     else Validation Successful
         Note over Service: Source.withdraw(1500) & Target.deposit(1500)
         Service->>AccRepo: updateBalance(conn, FromAcc, newSourceBal)
@@ -248,111 +365,125 @@ sequenceDiagram
         
         Service->>Conn: commit() [ATOMIC PERSISTENCE]
         Service->>Conn: setAutoCommit(true)
-        Service-->>User: Transfer Completed Successfully
+        Service-->>User: Transaction Confirmed
     end
 ```
 
 ---
 
-## 4. 3-Tier System Architecture Diagram
+## 6. 3-Tier System Architecture Diagram
 
 ```mermaid
-flowchart TD
-    subgraph Presentation_Layer["1. Presentation Layer"]
-        CLI["Interactive Console Menu (ConsoleMenu.java)"]
-        DEMO["Automated Verification Demo (DemoRunner.java)"]
+graph TD
+    subgraph Presentation Tier
+        UI_GUI["🖥️ Java Swing GUI (LoginFrame, Dashboard, CRUD Dialog)"]
+        UI_CLI["💻 Interactive Console Terminal (ConsoleMenu)"]
+        UI_DEMO["🚀 Automated Capstone Demo Runner (DemoRunner)"]
     end
 
-    subgraph Business_Service_Layer["2. Business Logic & Service Layer"]
-        BS["BankingService (ACID Transfers, Interest, Fees)"]
-        CS["CustomerService (Customer Lifecycle & Onboarding)"]
-        RS["ReportService (DBMS Relational Analytics & DTOs)"]
+    subgraph Business Service Tier
+        AUTH_SVC["AuthService (User Authentication & Session Audit)"]
+        FIN_SVC["FinanceService (CRUD Management & Aggregations)"]
+        BANK_SVC["BankingService (ACID Transfers & Adjustments)"]
+        CUST_SVC["CustomerService (Onboarding & Account Opening)"]
+        RPT_SVC["ReportService (SQL Analytics & Financial Portfolios)"]
     end
 
-    subgraph Data_Access_Layer["3. Data Access (DAO / Repository) Layer"]
-        CR["JdbcCustomerRepository"]
-        AR["JdbcAccountRepository (Polymorphic Row Hydration)"]
-        TR["JdbcTransactionRepository (Immutable Ledger)"]
-        ALR["JdbcAuditLogRepository (Security Logging)"]
-        DBM["DatabaseManager (Connection Lifecycle & Transaction Pool)"]
+    subgraph Data Access Repository Tier
+        USER_REPO["UserRepository (JdbcUserRepository)"]
+        FIN_REPO["FinancialRecordRepository (JdbcFinancialRecordRepository)"]
+        BUDGET_REPO["BudgetRepository (JdbcBudgetRepository)"]
+        ACC_REPO["AccountRepository (JdbcAccountRepository)"]
+        TX_REPO["TransactionRepository (JdbcTransactionRepository)"]
+        AUDIT_REPO["AuditLogRepository (JdbcAuditLogRepository)"]
     end
 
-    subgraph Storage_Layer["4. Relational Storage Engine"]
-        SQLITE[("SQLite (Embedded fincore_banking.db)")]
-        MYSQL[("MySQL (Enterprise InnoDB Server)")]
+    subgraph Relational DBMS Tier
+        DB_CONN["DatabaseManager (JDBC Connection Pool & SQL Listener)"]
+        ORACLE_DB[("Oracle 10g XE Engine (Port 1521)")]
+        SQLITE_DB[("SQLite Embedded Database")]
     end
 
-    CLI --> BS & CS & RS
-    DEMO --> BS & CS & RS
+    UI_GUI --> AUTH_SVC
+    UI_GUI --> FIN_SVC
+    UI_CLI --> BANK_SVC
+    UI_DEMO --> AUTH_SVC
+    UI_DEMO --> FIN_SVC
 
-    BS --> AR & TR & ALR & DBM
-    CS --> CR & AR & ALR
-    RS --> CR & AR & TR & ALR & DBM
+    AUTH_SVC --> USER_REPO
+    FIN_SVC --> FIN_REPO
+    FIN_SVC --> BUDGET_REPO
+    BANK_SVC --> ACC_REPO
+    BANK_SVC --> TX_REPO
+    BANK_SVC --> AUDIT_REPO
 
-    CR & AR & TR & ALR --> DBM
-    DBM --> SQLITE
-    DBM -.->|Switchable in db.properties| MYSQL
+    USER_REPO --> DB_CONN
+    FIN_REPO --> DB_CONN
+    BUDGET_REPO --> DB_CONN
+    ACC_REPO --> DB_CONN
+    TX_REPO --> DB_CONN
+    AUDIT_REPO --> DB_CONN
+
+    DB_CONN -.->|ojdbc11 Driver| ORACLE_DB
+    DB_CONN -.->|sqlite-jdbc Driver| SQLITE_DB
 ```
 
 ---
 
-## 5. Database Data Dictionary
+## 7. Database Data Dictionary
 
-### Table 1: `customers`
-| Column Name | Data Type | Constraints | Description |
-|---|---|---|---|
-| `id` | `INTEGER` / `BIGINT` | `PRIMARY KEY`, `AUTOINCREMENT` | Unique internal customer ID |
-| `customer_code` | `VARCHAR(30)` | `NOT NULL`, `UNIQUE` | Business identifier (e.g., `CUST-1001`) |
-| `name` | `VARCHAR(100)` | `NOT NULL` | Customer's full name |
-| `email` | `VARCHAR(100)` | `NOT NULL`, `UNIQUE` | Unique contact email address |
-| `phone` | `VARCHAR(30)` | `NULLABLE` | Telephone contact number |
-| `role` | `VARCHAR(20)` | `NOT NULL`, `DEFAULT 'CUSTOMER'` | Role classification (`CUSTOMER`, `ADMIN`) |
-| `status` | `VARCHAR(20)` | `NOT NULL`, `DEFAULT 'ACTIVE'` | Status (`ACTIVE`, `SUSPENDED`, `CLOSED`) |
-| `created_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Account creation timestamp |
+### Table: `users`
+| Column Name | Data Type (Oracle 10g XE) | SQLite Equivalent | Constraints | Description |
+|---|---|---|---|---|
+| `id` | `NUMBER(19)` | `INTEGER` | `PRIMARY KEY` (via Sequence) | Unique User ID |
+| `username` | `VARCHAR2(50)` | `TEXT` | `NOT NULL UNIQUE` | Login username |
+| `password` | `VARCHAR2(255)` | `TEXT` | `NOT NULL` | Credential string |
+| `full_name` | `VARCHAR2(100)` | `TEXT` | `NOT NULL` | Display Name |
+| `role` | `VARCHAR2(30)` | `TEXT` | `DEFAULT 'USER'` | `ADMIN`, `FINANCE_OFFICER`, etc. |
+| `status` | `VARCHAR2(20)` | `TEXT` | `DEFAULT 'ACTIVE'` | `ACTIVE`, `SUSPENDED` |
+| `created_at` | `TIMESTAMP` | `DATETIME` | `DEFAULT CURRENT_TIMESTAMP` | Account Creation Date |
 
-### Table 2: `accounts`
-| Column Name | Data Type | Constraints | Description |
-|---|---|---|---|
-| `account_number` | `VARCHAR(30)` | `PRIMARY KEY` | Unique account string (e.g. `SAV-100101`) |
-| `customer_id` | `INTEGER` / `BIGINT` | `NOT NULL`, `FOREIGN KEY` | References `customers(id)` with `CASCADE` |
-| `account_type` | `VARCHAR(20)` | `NOT NULL`, `CHECK (SAVINGS/CHECKING)` | Discriminator for polymorphic class mapping |
-| `balance` | `DECIMAL(15,2)` | `NOT NULL`, `DEFAULT 0.00` | Account ledger balance |
-| `interest_rate` | `DECIMAL(5,2)` | `DEFAULT 0.00` | Annual interest percentage (for Savings) |
-| `overdraft_limit`| `DECIMAL(15,2)` | `DEFAULT 0.00` | Overdraft credit allowance (for Checking) |
-| `status` | `VARCHAR(20)` | `NOT NULL`, `DEFAULT 'ACTIVE'` | Operational status (`ACTIVE`, `FROZEN`, etc.) |
-| `created_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Account creation timestamp |
-
-### Table 3: `transactions`
-| Column Name | Data Type | Constraints | Description |
-|---|---|---|---|
-| `id` | `INTEGER` / `BIGINT` | `PRIMARY KEY`, `AUTOINCREMENT` | Internal transaction ID |
-| `transaction_id` | `VARCHAR(50)` | `NOT NULL`, `UNIQUE` | External UUID reference identifier |
-| `account_number` | `VARCHAR(30)` | `NOT NULL`, `FOREIGN KEY` | References `accounts(account_number)` with `CASCADE` |
-| `type` | `VARCHAR(20)` | `NOT NULL` | Type: `DEPOSIT`, `WITHDRAWAL`, `TRANSFER_OUT`, etc. |
-| `amount` | `DECIMAL(15,2)` | `NOT NULL`, `CHECK (amount > 0)` | Absolute value transferred |
-| `balance_after` | `DECIMAL(15,2)` | `NOT NULL` | Balance of the account after this transaction |
-| `target_account` | `VARCHAR(30)` | `NULLABLE` | Destination/source account number for transfers |
-| `description` | `VARCHAR(255)` | `NULLABLE` | Transfer memo or payment purpose |
-| `created_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Transaction execution timestamp |
-
-### Table 4: `audit_logs`
-| Column Name | Data Type | Constraints | Description |
-|---|---|---|---|
-| `id` | `INTEGER` / `BIGINT` | `PRIMARY KEY`, `AUTOINCREMENT` | Primary key |
-| `action` | `VARCHAR(50)` | `NOT NULL` | Action code (`TRANSFER`, `CREATE_ACCOUNT`, etc.) |
-| `entity_type` | `VARCHAR(50)` | `NOT NULL` | Entity name (`CUSTOMER`, `ACCOUNT`, `TRANSACTION`) |
-| `entity_id` | `VARCHAR(50)` | `NOT NULL` | Identifier of affected record |
-| `performed_by` | `VARCHAR(100)` | `NOT NULL` | User or automated process |
-| `details` | `TEXT` | `NULLABLE` | Human-readable log details |
-| `timestamp` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Log record timestamp |
+### Table: `financial_records`
+| Column Name | Data Type (Oracle 10g XE) | SQLite Equivalent | Constraints | Description |
+|---|---|---|---|---|
+| `id` | `NUMBER(19)` | `INTEGER` | `PRIMARY KEY` (via Sequence) | Auto-increment PK |
+| `record_type` | `VARCHAR2(20)` | `TEXT` | `CHECK IN ('INCOME', 'EXPENSE')` | Financial classification |
+| `category` | `VARCHAR2(50)` | `TEXT` | `NOT NULL` | Expense or revenue category |
+| `amount` | `NUMBER(15,2)` | `REAL` | `CHECK (amount > 0)` | Monetary sum |
+| `account_number` | `VARCHAR2(30)` | `TEXT` | `NOT NULL REFERENCES accounts` | Associated Account |
+| `description` | `VARCHAR2(255)` | `TEXT` | - | Descriptive memo |
+| `record_date` | `DATE` | `DATE` | `NOT NULL` | Date of financial event |
+| `created_at` | `TIMESTAMP` | `DATETIME` | `DEFAULT CURRENT_TIMESTAMP` | System insertion timestamp |
 
 ---
 
-## 6. Database Indexes for Performance Optimization
+## 8. Oracle 10g XE Configuration & Sequences
 
-To guarantee high throughput and minimize scan overhead on high-frequency lookups, the following B-Tree indexes are defined:
+For Oracle 10g XE, primary keys use Sequences and Triggers:
 
-1. **`idx_accounts_customer_id`** on `accounts(customer_id)`: Enables instant sub-millisecond retrieval of all accounts owned by a customer.
-2. **`idx_transactions_account_num`** on `transactions(account_number)`: Optimizes account statement lookups and transaction history.
-3. **`idx_transactions_created_at`** on `transactions(created_at)`: Optimizes date-filtered reporting and month-end ledger audits.
-4. **`idx_audit_logs_timestamp`** on `audit_logs(timestamp)`: Optimizes regulatory compliance history searches.
+```sql
+CREATE SEQUENCE seq_users START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_fin_records START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_budgets START WITH 1 INCREMENT BY 1;
+
+CREATE OR REPLACE TRIGGER trg_users_bi
+BEFORE INSERT ON users
+FOR EACH ROW
+WHEN (NEW.id IS NULL)
+BEGIN
+    SELECT seq_users.NEXTVAL INTO :NEW.id FROM dual;
+END;
+/
+```
+
+To switch between Oracle 10g XE and SQLite, configure `src/main/resources/db.properties`:
+```properties
+# For Oracle 10g XE:
+db.type=oracle
+oracle.url=jdbc:oracle:thin:@localhost:1521:xe
+oracle.user=system
+oracle.password=oracle
+
+# For SQLite (Default zero-config):
+# db.type=sqlite
+```
