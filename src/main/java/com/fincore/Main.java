@@ -100,9 +100,7 @@ public class Main {
             boolean headless = GraphicsEnvironment.isHeadless();
             if (!headless || forceGui) {
                 System.out.println(GREEN + "[GUI] Launching Java Swing Authentication & Finance Dashboard..." + RESET);
-                try {
-                    UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-                } catch (Exception ignored) {}
+                com.fincore.ui.swing.UiUtil.applySystemLookAndFeel();
 
                 SwingUtilities.invokeLater(() -> {
                     try {

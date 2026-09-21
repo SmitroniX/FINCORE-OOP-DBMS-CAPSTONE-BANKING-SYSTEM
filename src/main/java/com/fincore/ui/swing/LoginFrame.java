@@ -52,6 +52,7 @@ public class LoginFrame extends JFrame {
         setResizable(false);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        UiUtil.setWindowIcon(this);
 
         initUI();
     }
@@ -280,17 +281,46 @@ public class LoginFrame extends JFrame {
         bottomPanel.add(closeBtn);
         demoDialog.add(bottomPanel, BorderLayout.SOUTH);
 
+        UiUtil.setWindowIcon(demoDialog);
+
         // Execute demo in background thread and pipe output
         new Thread(() -> {
             logArea.append(">>> Launching FinCore Automated Capstone Demonstration...\n");
+            java.io.PrintStream originalOut = System.out;
+            java.io.PrintStream originalErr = System.err;
+            java.io.OutputStream guiStream = new java.io.OutputStream() {
+                private final java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream();
+                @Override
+                public void write(int b) {
+                    if (b == '\n') {
+                        String line = buffer.toString(java.nio.charset.StandardCharsets.UTF_8).replaceAll("\u001B\\[[;\\d]*m", "");
+                        buffer.reset();
+                        SwingUtilities.invokeLater(() -> {
+                            logArea.append(line + "\n");
+                            logArea.setCaretPosition(logArea.getDocument().getLength());
+                        });
+                    } else {
+                        buffer.write(b);
+                    }
+                }
+            };
+            java.io.PrintStream teePrintStream = new java.io.PrintStream(guiStream, true, java.nio.charset.StandardCharsets.UTF_8);
+
             try {
+                System.setOut(teePrintStream);
+                System.setErr(teePrintStream);
                 if (demoRunner != null) {
                     demoRunner.runFullDemonstration();
-                    logArea.append("\n>>> Capstone Demonstration completed successfully!\n");
-                    logArea.append(">>> Check the terminal or console for detailed colored logs and SQL trace.\n");
+                    SwingUtilities.invokeLater(() -> {
+                        logArea.append("\n>>> Capstone Demonstration completed successfully!\n");
+                        logArea.setCaretPosition(logArea.getDocument().getLength());
+                    });
                 }
             } catch (Exception ex) {
-                logArea.append("\n[ERROR] Demo encountered an exception: " + ex.getMessage() + "\n");
+                SwingUtilities.invokeLater(() -> logArea.append("\n[ERROR] Demo encountered an exception: " + ex.getMessage() + "\n"));
+            } finally {
+                System.setOut(originalOut);
+                System.setErr(originalErr);
             }
         }).start();
 

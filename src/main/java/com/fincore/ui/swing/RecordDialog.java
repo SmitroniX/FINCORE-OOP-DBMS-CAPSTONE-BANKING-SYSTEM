@@ -33,6 +33,7 @@ public class RecordDialog extends JDialog {
         setSize(460, 380);
         setLocationRelativeTo(owner);
         setLayout(new BorderLayout(10, 10));
+        UiUtil.setWindowIcon(this);
 
         initUI();
     }

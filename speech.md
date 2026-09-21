@@ -220,14 +220,15 @@
 
 ### 1. How to run the demo during the presentation:
 ```bash
-# Option A: Run automated verification showcase in terminal
-./run.sh --demo
+# On Windows:
+run.bat --gui        # Launch Java Swing GUI (or double-click run.bat / run-gui.bat)
+run.bat --demo       # Run automated verification showcase in Command Prompt (or run-demo.bat)
+run.bat --cli        # Run interactive console menu
 
-# Option B: Run Java Swing graphical GUI (with Login and Dashboard)
-./run.sh --gui
-
-# Option C: Run interactive console menu
-./run.sh --cli
+# On Linux / macOS:
+./run.sh --gui       # Launch Java Swing GUI (with auto-display detection)
+./run.sh --demo      # Run automated verification showcase in terminal
+./run.sh --cli       # Run interactive console menu
 ```
 
 ### 2. Common Evaluator Questions & Recommended Answers:

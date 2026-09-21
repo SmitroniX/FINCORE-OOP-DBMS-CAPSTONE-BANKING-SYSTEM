@@ -139,28 +139,62 @@ erDiagram
 
 ---
 
+---
+
+## 🪟 Windows Execution & Native GUI Experience
+
+FinCore is engineered to provide a first-class **Windows GUI desktop experience** across all Windows systems (**Windows 11, Windows 10, Windows 8, Windows 7, Windows Server**):
+
+* **Native Windows Look & Feel**: Uses `WindowsLookAndFeel` with native window borders, titlebars, buttons, Segoe UI typography, and high-DPI scaling.
+* **Custom Taskbar Icon**: Displays a branded "FC" FinCore application icon on the Windows taskbar and titlebar.
+* **Default Launch Mode**: Opening without flags immediately launches the **Java Swing GUI** (`LoginFrame` $\to$ `FinanceDashboardFrame`).
+
+### Windows Launcher Shortcuts:
+| Windows File | Action / Description |
+|---|---|
+| 🖱️ **`run.bat`** | **Universal Launcher**: Double-click to start the Java Swing GUI automatically. |
+| 🖱️ **`run-gui.bat`** | **Direct GUI Shortcut**: Opens the Login Frame and Finance Dashboard directly. |
+| 🖱️ **`launch-gui.vbs`** | **Silent GUI Launcher**: Launches the GUI silently without opening any background black command prompt window. |
+| 🖱️ **`run-demo.bat`** | **Capstone Demo in CMD**: Runs the full 8-step verification demonstration in a colored terminal and pauses when finished. |
+| 🖱️ **`run-cli.bat`** | **Interactive CLI**: Opens the interactive terminal banking menu. |
+
+### Running on Windows via Command Prompt / PowerShell:
+```cmd
+:: 1. Launch GUI directly
+run.bat --gui
+
+:: 2. Run Automated Capstone Demonstration
+run.bat --demo
+
+:: 3. Run Interactive Console Menu
+run.bat --cli
+
+:: 4. Direct Java execution
+java -jar target\oop-dbms-capstone-1.0.0-jar-with-dependencies.jar
+```
+
+---
+
 ## 🖥️ Capstone Demonstration Workflow
 
-### 1. Launch Options
-FinCore supports interactive GUI, full automated verification demo, and terminal CLI:
+### 1. Launch Options (Linux / macOS / Windows)
 
 ```bash
-# Option 1: Run Full Automated Capstone Demonstration (Recommended for grading)
-./run.sh --demo
+# Windows:
+run.bat --gui      # Launch Java Swing GUI (or double-click run.bat)
+run.bat --demo     # Run Capstone Demonstration (or double-click run-demo.bat)
+run.bat --cli      # Interactive Terminal Console
 
-# Option 2: Launch Java Swing Graphical Interface (Login & Finance Dashboard)
-./run.sh --gui
-
-# Option 3: Launch Interactive Terminal Console Menu
-./run.sh --cli
-
-# Option 4: Run Complete Test Suite (14 Unit & Integration Tests)
-./run.sh --test
+# Linux / macOS:
+./run.sh --gui     # Launch Java Swing GUI (auto-detects X11/xvfb)
+./run.sh --demo    # Run Capstone Demonstration
+./run.sh --cli     # Interactive Terminal Console
+./run.sh --test    # Run Complete Test Suite (14 Unit & Integration Tests)
 ```
 
 ### 2. Capstone Step-by-Step Demonstration Sequence
-When running `./run.sh --demo` (or testing via GUI), the system automatically executes and verifies:
-1. **Application Start & Database Connectivity**: Initializes JDBC connection pool to SQLite or Oracle 10g XE.
+When running `./run.sh --demo` or `run.bat --demo` (or clicking **"🚀 Run Full Capstone Demonstration"** inside the GUI Login window), the system automatically executes and verifies:
+1. **Application Start & Database Connectivity**: Initializes JDBC connection pool to Oracle 10g XE (or embedded SQLite).
 2. **Database Authentication (Login)**:
    - Tests rejection of invalid credentials.
    - Executes SQL `SELECT ... FROM users WHERE username = ? AND password = ? AND status = 'ACTIVE'`.
@@ -185,27 +219,31 @@ Edit `src/main/resources/db.properties`:
 ```properties
 # ====================================================================
 # FinCore Database Configuration
+# Default DBMS Engine: Oracle 10g Express Edition (XE)
 # ====================================================================
 
-# Default: Zero-configuration embedded SQLite
-db.type=sqlite
-sqlite.url=jdbc:sqlite:fincore_banking.db
+db.type=oracle
 
 # --------------------------------------------------------------------
-# Oracle 10g XE Configuration:
+# Oracle 10g XE Configuration (Default):
 # --------------------------------------------------------------------
-# db.type=oracle
-# oracle.url=jdbc:oracle:thin:@localhost:1521:xe
-# oracle.user=system
-# oracle.password=oracle
+oracle.driver=oracle.jdbc.OracleDriver
+oracle.url=jdbc:oracle:thin:@localhost:1521:xe
+oracle.user=system
+oracle.password=oracle
+oracle.fallback.sqlite=true
+
+# --------------------------------------------------------------------
+# SQLite Configuration (Offline Fallback & Embedded Engine):
+# --------------------------------------------------------------------
+sqlite.url=jdbc:sqlite:fincore_banking.db
 
 # --------------------------------------------------------------------
 # MySQL Configuration:
 # --------------------------------------------------------------------
-# db.type=mysql
-# mysql.url=jdbc:mysql://localhost:3306/fincore_db?createDatabaseIfNotExist=true
-# mysql.user=root
-# mysql.password=
+mysql.url=jdbc:mysql://localhost:3306/fincore_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+mysql.user=root
+mysql.password=
 ```
 
 ---

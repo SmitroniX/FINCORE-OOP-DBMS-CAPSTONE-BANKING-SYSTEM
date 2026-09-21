@@ -82,6 +82,7 @@ public class FinanceDashboardFrame extends JFrame implements DatabaseManager.Sql
         setMinimumSize(new Dimension(950, 650));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        UiUtil.setWindowIcon(this);
 
         initUI();
 
