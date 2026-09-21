@@ -83,7 +83,10 @@ public class MigrationRunner {
 
                 if (isOracle) {
                     String upper = trimmed.toUpperCase();
-                    if (upper.startsWith("CREATE OR REPLACE TRIGGER") || upper.startsWith("CREATE TRIGGER")) {
+                    if (upper.startsWith("CREATE OR REPLACE TRIGGER") || upper.startsWith("CREATE TRIGGER")
+                        || upper.startsWith("CREATE OR REPLACE PACKAGE") || upper.startsWith("CREATE PACKAGE")
+                        || upper.startsWith("CREATE OR REPLACE PROCEDURE") || upper.startsWith("CREATE PROCEDURE")
+                        || upper.startsWith("CREATE OR REPLACE FUNCTION") || upper.startsWith("CREATE FUNCTION")) {
                         insidePlSql = true;
                     }
 

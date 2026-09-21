@@ -10,8 +10,10 @@ import com.fincore.service.exception.BankingException;
 import com.fincore.service.exception.InsufficientFundsException;
 import com.fincore.service.exception.InvalidTransactionException;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.UUID;
 
 /**
@@ -112,10 +114,41 @@ public class BankingService {
             throw new InvalidTransactionException("Transfer amount must be strictly greater than zero.");
         }
 
+        // 1. If connected to Oracle DB, execute production PL/SQL Stored Package Procedure
+        if (dbManager.isOracle()) {
+            try (Connection conn = dbManager.getConnection();
+                 CallableStatement cstmt = conn.prepareCall("{CALL PKG_BANKING_OPERATIONS.TRANSFER_FUNDS(?, ?, ?, ?, ?, ?)}")) {
+                long start = System.currentTimeMillis();
+                cstmt.setString(1, fromAccountNum);
+                cstmt.setString(2, toAccountNum);
+                cstmt.setDouble(3, amount);
+                cstmt.setString(4, remarks != null ? remarks : "Fund Transfer");
+                cstmt.registerOutParameter(5, Types.VARCHAR);
+                cstmt.registerOutParameter(6, Types.VARCHAR);
+                cstmt.execute();
+                long duration = System.currentTimeMillis() - start;
+
+                String status = cstmt.getString(5);
+                String msg = cstmt.getString(6);
+                dbManager.notifySqlExecuted("PL/SQL CALL", 
+                        "CALL PKG_BANKING_OPERATIONS.TRANSFER_FUNDS('" + fromAccountNum + "', '" + toAccountNum + "', " + amount + ")", 
+                        duration, 2);
+
+                if ("SUCCESS".equalsIgnoreCase(status)) {
+                    return;
+                } else {
+                    throw new InvalidTransactionException(msg != null ? msg : "Transfer failed in PL/SQL package.");
+                }
+            } catch (SQLException e) {
+                System.out.println("[BankingService] Notice: PL/SQL package procedure fallback to JDBC ACID transaction: " + e.getMessage());
+                // Fall through to standard JDBC ACID transaction below
+            }
+        }
+
         Connection conn = null;
         try {
             conn = dbManager.getConnection();
-            // 1. Begin DBMS Transaction (Disable auto-commit)
+            // 2. Begin DBMS Transaction (Disable auto-commit)
             conn.setAutoCommit(false);
 
             Account source = accountRepo.findByAccountNumber(conn, fromAccountNum)

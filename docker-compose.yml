@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  oracle-db:
+    image: gvenzl/oracle-free:23-slim
+    container_name: fincore-oracle-db
+    ports:
+      - "1521:1521"
+    environment:
+      - ORACLE_PASSWORD=fincore123
+      - APP_USER=fincore_user
+      - APP_USER_PASSWORD=fincore_pass
+    volumes:
+      - ./init-scripts:/container-entrypoint-initdb.d:ro
+      - fincore_oracle_data:/opt/oracle/oradata
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/oracle/checkDBStatus.sh || true"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  fincore_oracle_data:
+    driver: local

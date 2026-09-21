@@ -1,6 +1,6 @@
 -- ====================================================================
 -- FinCore Database Schema (SQLite)
--- Supports Relational Constraints, Foreign Keys, Indexes, Check Constraints
+-- Supports Relational Constraints, Foreign Keys, Indexes, Check Constraints, Views
 -- ====================================================================
 
 PRAGMA foreign_keys = ON;
@@ -88,7 +88,63 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 8. Indexes for fast query performance & DBMS optimization
+-- 8. Relational Views
+CREATE VIEW IF NOT EXISTS v_customer_portfolio AS
+SELECT 
+    c.id AS customer_id,
+    c.customer_code,
+    c.name AS customer_name,
+    c.email,
+    c.role,
+    c.status,
+    COUNT(DISTINCT a.account_number) AS total_accounts,
+    COALESCE(SUM(CASE WHEN a.account_type = 'SAVINGS' THEN a.balance ELSE 0 END), 0) AS savings_balance,
+    COALESCE(SUM(CASE WHEN a.account_type = 'CHECKING' THEN a.balance ELSE 0 END), 0) AS checking_balance,
+    COALESCE(SUM(a.balance), 0) AS net_worth,
+    COUNT(t.id) AS total_transactions
+FROM customers c
+LEFT JOIN accounts a ON c.id = a.customer_id
+LEFT JOIN transactions t ON a.account_number = t.account_number
+GROUP BY c.id, c.customer_code, c.name, c.email, c.role, c.status;
+
+CREATE VIEW IF NOT EXISTS v_budget_summary AS
+SELECT 
+    b.id AS budget_id,
+    b.category,
+    b.monthly_limit,
+    b.period_month,
+    COALESCE(f.total_spent, 0) AS total_spent,
+    (b.monthly_limit - COALESCE(f.total_spent, 0)) AS remaining_budget,
+    CASE 
+        WHEN b.monthly_limit > 0 THEN ROUND((COALESCE(f.total_spent, 0) / b.monthly_limit) * 100, 2)
+        ELSE 0 
+    END AS utilization_pct
+FROM budgets b
+LEFT JOIN (
+    SELECT category, SUM(amount) AS total_spent
+    FROM financial_records
+    WHERE record_type = 'EXPENSE'
+    GROUP BY category
+) f ON b.category = f.category;
+
+CREATE VIEW IF NOT EXISTS v_account_ledger AS
+SELECT 
+    a.account_number,
+    a.account_type,
+    a.balance,
+    c.name AS customer_name,
+    c.customer_code,
+    t.transaction_id,
+    t.type AS tx_type,
+    t.amount AS tx_amount,
+    t.balance_after,
+    t.created_at AS tx_time,
+    t.description AS tx_desc
+FROM accounts a
+JOIN customers c ON a.customer_id = c.id
+LEFT JOIN transactions t ON a.account_number = t.account_number;
+
+-- 9. Indexes for fast query performance & DBMS optimization
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_accounts_customer_id ON accounts(customer_id);
 CREATE INDEX IF NOT EXISTS idx_financial_type ON financial_records(record_type);

@@ -99,22 +99,18 @@ public class Main {
             // Check display environment
             boolean headless = GraphicsEnvironment.isHeadless();
             if (!headless || forceGui) {
-                System.out.println(GREEN + "[GUI] Launching Java Swing Authentication & Finance Dashboard..." + RESET);
-                com.fincore.ui.swing.UiUtil.applySystemLookAndFeel();
-
-                SwingUtilities.invokeLater(() -> {
-                    try {
-                        LoginFrame loginFrame = new LoginFrame(authService, financeService, bankingService, customerService, reportService, demoRunner);
-                        loginFrame.setVisible(true);
-                    } catch (Exception ex) {
-                        System.err.println("[GUI Launch Error] Falling back to console: " + ex.getMessage());
-                        consoleMenu.start();
-                    }
-                });
+                System.out.println(GREEN + "[GUI] Launching FinCore JavaFX 21 Enterprise Finance Dashboard..." + RESET);
+                try {
+                    javafx.application.Application.launch(MainApp.class, args);
+                } catch (Throwable ex) {
+                    System.err.println("[GUI Launch Notice] JavaFX GUI could not be initialized: " + ex.getMessage());
+                    System.out.println(YELLOW + "Starting Interactive Console Menu...\n" + RESET);
+                    consoleMenu.start();
+                }
             } else {
-                System.out.println(YELLOW + "[Notice] Headless environment detected (no active X11 / Wayland display)." + RESET);
-                System.out.println(YELLOW + "         • To launch Java Swing GUI with virtual display: xvfb-run ./run.sh" + RESET);
-                System.out.println(YELLOW + "         • To run the full Capstone Demonstration:        ./run.sh --demo" + RESET);
+                System.out.println(YELLOW + "[Notice] Headless environment detected (no active display)." + RESET);
+                System.out.println(YELLOW + "         • On Windows: Simply run 'run.bat' in CMD to launch the JavaFX 21 UI!" + RESET);
+                System.out.println(YELLOW + "         • To run the automated Capstone Demonstration: mvn test or run-demo.bat" + RESET);
                 System.out.println(YELLOW + "         • Starting Interactive Console Menu...\n" + RESET);
                 consoleMenu.start();
             }

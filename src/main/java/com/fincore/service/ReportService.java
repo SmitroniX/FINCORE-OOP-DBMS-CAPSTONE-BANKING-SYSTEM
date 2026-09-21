@@ -93,4 +93,51 @@ public class ReportService {
     public List<AuditLog> getRecentAuditLogs(int limit) {
         return auditRepo.findRecentLogs(limit);
     }
+
+    /**
+     * Queries the DBMS relational view v_customer_portfolio.
+     */
+    public List<Map<String, Object>> getCustomerPortfolioViewReport() {
+        return executeViewQuery("SELECT * FROM v_customer_portfolio ORDER BY net_worth DESC");
+    }
+
+    /**
+     * Queries the DBMS relational view v_budget_summary.
+     */
+    public List<Map<String, Object>> getBudgetSummaryViewReport() {
+        return executeViewQuery("SELECT * FROM v_budget_summary ORDER BY utilization_pct DESC");
+    }
+
+    /**
+     * Queries the DBMS relational view v_account_ledger.
+     */
+    public List<Map<String, Object>> getAccountLedgerViewReport(int limit) {
+        String sql = dbManager.isOracle() 
+                ? "SELECT * FROM (SELECT * FROM v_account_ledger ORDER BY tx_time DESC) WHERE ROWNUM <= " + limit
+                : "SELECT * FROM v_account_ledger ORDER BY tx_time DESC LIMIT " + limit;
+        return executeViewQuery(sql);
+    }
+
+    private List<Map<String, Object>> executeViewQuery(String sql) {
+        List<Map<String, Object>> results = new java.util.ArrayList<>();
+        long start = System.currentTimeMillis();
+        try (Connection conn = dbManager.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            java.sql.ResultSetMetaData meta = rs.getMetaData();
+            int colCount = meta.getColumnCount();
+            while (rs.next()) {
+                Map<String, Object> row = new java.util.LinkedHashMap<>();
+                for (int i = 1; i <= colCount; i++) {
+                    row.put(meta.getColumnLabel(i), rs.getObject(i));
+                }
+                results.add(row);
+            }
+            long duration = System.currentTimeMillis() - start;
+            dbManager.notifySqlExecuted("VIEW SELECT", sql, duration, results.size());
+        } catch (SQLException e) {
+            System.err.println("[ReportService] Error querying view: " + e.getMessage());
+        }
+        return results;
+    }
 }

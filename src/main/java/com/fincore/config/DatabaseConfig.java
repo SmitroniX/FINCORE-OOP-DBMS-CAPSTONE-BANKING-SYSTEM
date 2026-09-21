@@ -53,7 +53,7 @@ public class DatabaseConfig {
     public String getJdbcUrl() {
         String type = getDbType();
         if ("oracle".equals(type)) {
-            return properties.getProperty("oracle.url", "jdbc:oracle:thin:@localhost:1521:xe");
+            return properties.getProperty("oracle.url", "jdbc:oracle:thin:@localhost:1521/FREEPDB1");
         } else if ("mysql".equals(type)) {
             return properties.getProperty("mysql.url", "jdbc:mysql://localhost:3306/fincore_db");
         }
@@ -77,7 +77,7 @@ public class DatabaseConfig {
     public String getDbUser() {
         String type = getDbType();
         if ("oracle".equals(type)) {
-            return properties.getProperty("oracle.user", "system");
+            return properties.getProperty("oracle.user", "fincore_user");
         } else if ("mysql".equals(type)) {
             return properties.getProperty("mysql.user", "root");
         }
@@ -87,11 +87,23 @@ public class DatabaseConfig {
     public String getDbPassword() {
         String type = getDbType();
         if ("oracle".equals(type)) {
-            return properties.getProperty("oracle.password", "oracle");
+            return properties.getProperty("oracle.password", "fincore_pass");
         } else if ("mysql".equals(type)) {
             return properties.getProperty("mysql.password", "");
         }
         return "";
+    }
+
+    public String getOracleAltUrl() {
+        return properties.getProperty("oracle.alt.url", "jdbc:oracle:thin:@localhost:1521:xe");
+    }
+
+    public String getOracleAltUser() {
+        return properties.getProperty("oracle.alt.user", "system");
+    }
+
+    public String getOracleAltPassword() {
+        return properties.getProperty("oracle.alt.password", "oracle");
     }
 
     public String getSchemaFile() {

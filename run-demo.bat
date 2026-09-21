@@ -5,7 +5,7 @@ REM ====================================================================
 set "SCRIPT_DIR=%~dp0"
 cd /d "%SCRIPT_DIR%"
 echo ====================================================================
-echo   FinCore: Live Capstone Demonstration (Oracle 10g XE / SQLite)
+echo   FinCore: Live Capstone Demonstration (Java 21 ^| Oracle DB in Docker)
 echo ====================================================================
 echo.
 call "%SCRIPT_DIR%run.bat" --demo

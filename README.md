@@ -1,41 +1,144 @@
-# FinCore - Enterprise OOP & DBMS Capstone Banking & Finance System
+# FinCore - Enterprise Banking & Finance Management System (OOP & DBMS Capstone)
 
-[![Java](https://img.shields.io/badge/Java-17%2B-blue.svg)](https://www.oracle.com/java/)
-[![DBMS](https://img.shields.io/badge/DBMS-Oracle%2010g%20XE%20%7C%20SQLite%20%7C%20MySQL-orange.svg)](https://www.oracle.com/database/)
-[![UI](https://img.shields.io/badge/GUI-Java%20Swing-green.svg)](https://docs.oracle.com/javase/tutorial/uiswing/)
-[![JDBC](https://img.shields.io/badge/Connectivity-JDBC%20PreparedStatements-brightgreen.svg)](https://docs.oracle.com/javase/tutorial/jdbc/)
+[![Java](https://img.shields.io/badge/Java-21%20LTS-blue.svg)](https://www.oracle.com/java/)
+[![UI](https://img.shields.io/badge/GUI-JavaFX%2021-orange.svg)](https://openjfx.io/)
+[![DBMS](https://img.shields.io/badge/DBMS-Oracle%20Database%20(Docker)-red.svg)](https://hub.docker.com/r/gvenzl/oracle-free)
+[![JDBC](https://img.shields.io/badge/Driver-ojdbc11%2023.26.3.0.0-brightgreen.svg)](https://central.sonatype.com/artifact/com.oracle.database.jdbc/ojdbc11)
 [![Build](https://img.shields.io/badge/Build-Maven%20Passing-success.svg)](https://maven.apache.org/)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20CMD%20%7C%20Linux-lightgrey.svg)](https://github.com/SmitroniX/FINCORE-OOP-DBMS-CAPSTONE-BANKING-SYSTEM)
 
-An enterprise-grade Java application and Relational Database Management System (DBMS) Capstone Project demonstrating **Object-Oriented Programming (OOP)** paradigms alongside **Relational DBMS** architecture, database-backed authentication, a complete **CRUD module**, a multi-tab **Java Swing Finance Dashboard**, and **Oracle 10g XE** compatibility.
+An enterprise-grade Java application and Relational Database Management System (DBMS) Capstone Project demonstrating modern **Object-Oriented Programming (OOP)** paradigms alongside **Enterprise Relational DBMS** engineering. Powered by **Java 21**, **JavaFX 21**, containerized **Oracle Database** in Docker, official **Oracle JDBC (`ojdbc11:23.26.3.0.0`)**, **PL/SQL Stored Packages**, **Database Triggers**, and **Relational Views**. Fully configured for seamless execution on **Windows Command Prompt (CMD)** via automated batch scripts.
 
 ---
 
-## 🏛️ Key System Capabilities
+## 🎯 Evaluator Technical Stack Checklist
 
-1. **Database-Backed Authentication (Login)**:
-   - Authenticates operators directly against the relational `users` table using parameterized SQL `SELECT` queries.
-   - Rejects invalid passwords/usernames with audit security logging.
-   - Provides seeded quick-login roles (`admin` / `admin123` as Administrator, `asmit` / `password123` as Financial Officer).
-2. **Interactive Java Swing Finance Dashboard**:
-   - **Tab 1: 📊 Dashboard Overview**: Real-time KPI cards for Total Account Liquidity, Total Income, Total Expenses, and Net Cash Flow.
-   - **Tab 2: 💰 Income & Expenses (Complete CRUD Module)**: Full GUI management with `➕ Add Record (INSERT)`, table display with filter `(SELECT)`, `✏️ Edit Record (UPDATE)`, and `🗑️ Delete Record (DELETE)`.
-   - **Tab 3: 🏦 Accounts**: Savings (with APR) and Checking (with Overdraft allowance) accounts.
-   - **Tab 4: 🎯 Budget Tracker**: Relational JOIN dynamically computing category limit utilization.
-   - **Tab 5: 📜 Transactions Ledger**: Immutable double-entry audit history.
-   - **Tab 6: 📈 Financial Reports**: Expense category breakdown and percentage shares.
-   - **🖥️ Live JDBC SQL & DML Inspector Panel**: Docked bottom console streaming real-time SQL statements, execution duration (ms), and affected rows via the Observer Pattern.
-3. **Multi-DBMS Compatibility (Oracle 10g XE, SQLite, MySQL)**:
-   - Configurable via `src/main/resources/db.properties`.
-   - **Oracle 10g XE**: Includes `schema-oracle10g.sql` and `seed-oracle10g.sql` with Oracle sequences (`seq_users`, `seq_fin_records`, `seq_budgets`), triggers, `NUMBER(15,2)` decimal precision, and `VARCHAR2`.
-   - **SQLite**: Zero-configuration embedded database (`fincore_banking.db`) for immediate offline demonstration.
-4. **Complete Financial Record CRUD Module**:
-   - **`INSERT`**: Creates new Income or Expense records, capturing auto-generated primary keys.
-   - **`SELECT`**: Queries single records by ID or lists all records with dynamic category/type filtering.
-   - **`UPDATE`**: Edits amounts, categories, accounts, descriptions, and dates.
-   - **`DELETE`**: Removes records and verifies deletion from the database.
-5. **ACID Transaction Guarantees**:
-   - Atomic money transfers with synchronized balances and double-entry transaction records.
-   - Automatic rollback with 0 fund loss on overdraft/insufficient funds violations.
+| Layer | Technology | Specification / Version | Role in FinCore |
+|---|---|---|---|
+| **Language** | **Java 21 (LTS)** | JDK 21 | Core language, record types, strong type contracts |
+| **UI Framework** | **JavaFX 21** | OpenJFX 21.0.2 (`javafx-controls`, `javafx-fxml`) | Modern reactive desktop dashboard, dark financial theme, charts |
+| **Build Tool** | **Apache Maven** | `javafx-maven-plugin:0.0.8`, `exec-maven-plugin:3.1.1` | Dependency resolution, test runner, GUI launcher (`mvn javafx:run`) |
+| **Database Engine** | **Oracle Database** | Docker (`gvenzl/oracle-free:23-slim`), Port 1521 | Containerized enterprise RDBMS with PDB `FREEPDB1` |
+| **JDBC Driver** | **Oracle JDBC** | `com.oracle.database.jdbc:ojdbc11:23.26.3.0.0` | High-performance thin driver with pooled connections |
+| **In-DB Logic** | **PL/SQL Packages** | `PKG_BANKING_OPERATIONS` | In-database stored procedures (`TRANSFER_FUNDS`, `ADD_RECORD`, etc.) |
+| **DBMS Automation** | **Triggers & Views** | `trg_audit_tx`, `v_customer_portfolio`, `v_budget_summary` | Automated audit logging, threshold alert checking, analytical views |
+| **Execution** | **Windows CMD** | `run.bat`, `start-db.bat`, `stop-db.bat`, `run-gui.bat` | One-click Windows CMD orchestration |
+
+---
+
+## 🏛️ Core Features & Capabilities
+
+### 1. 🔐 Database-Backed Authentication (Login)
+- Authenticates operators directly against Oracle Database (`users` table) using parameterized SQL queries.
+- Password hashing verification and security audit logging upon unauthorized attempts.
+- Pre-seeded evaluation roles:
+  - **Administrator:** `admin` / `admin123` (Full system and finance control)
+  - **Finance Officer:** `asmit` / `password123` (Operational accounting & reports)
+
+### 2. 💰 Complete Financial Record CRUD Module
+A comprehensive, end-to-end CRUD implementation on financial records:
+- **`INSERT` (Create Record):** Creates new Income or Expense entries with category, amount, account number, description, and date. Automatically claims Oracle Sequence Primary Keys (`seq_fin_records`).
+- **`SELECT` (Read & Filter):** Queries records dynamically with sorting, search, and type-based filtering in the JavaFX TableView.
+- **`UPDATE` (Edit Record):** Modifies amounts, categories, and memos, instantly recalculating budget allocations and net cash flows.
+- **`DELETE` (Remove Record):** Purges records with confirmation dialogs and verifies elimination from Oracle DB.
+
+### 3. 🖥️ Modern JavaFX 21 Finance Dashboard
+- **Tab 1: 📊 Overview:** Real-time KPI summary cards (Total Account Liquidity, Total Income, Total Expenses, Net Cash Flow) alongside interactive visual charts (Income vs Expense Pie Chart and Category Breakdown Bar Chart).
+- **Tab 2: 💰 Financial Records:** Interactive data grid with complete CRUD modal dialogs (`➕ Add`, `✏️ Edit`, `🗑️ Delete`).
+- **Tab 3: 🏦 Accounts:** Overview of all savings accounts (with APR) and checking accounts (with authorized overdraft limits).
+- **Tab 4: 🎯 Budget Tracker:** Relational join computing category spending limits vs actuals with dynamic variance alerts.
+- **Tab 5: 📜 Transactions Ledger:** Full immutable double-entry audit history.
+- **Tab 6: 📈 Relational Views:** Direct visibility into Oracle's analytical views (`v_customer_portfolio`, `v_budget_summary`).
+- **Tab 7: ⚡ Live SQL Console:** Built-in SQL terminal allowing evaluators to run arbitrary SQL queries and view tabular results.
+- **🖥️ Live SQL / PLSQL Stream Console:** Docked bottom stream inspector capturing every executed SQL statement with millisecond latency and affected row counts via the Observer Pattern.
+
+### 4. ⚡ In-Database PL/SQL & ACID Transactions
+- **PL/SQL Package `PKG_BANKING_OPERATIONS`:**
+  - `TRANSFER_FUNDS`: Atomic inter-account money transfer executing within Oracle's kernel.
+  - `ADD_FINANCIAL_RECORD`: Validated transaction record insertion.
+  - `GET_CUSTOMER_NET_WORTH`: Instant portfolio calculation.
+- **Triggers:**
+  - `trg_audit_tx`: Automatically logs every transaction to `audit_logs`.
+  - `trg_check_budget_alert`: Evaluates budget limits on expense insertions.
+- **Relational Views:**
+  - `v_customer_portfolio`: Aggregates customer balances and active account counts.
+  - `v_budget_summary`: Dynamic budget health indicator (`OK`, `WARNING`, `EXCEEDED`).
+- **ACID Fallback:** Automatic rollback guarantees zero fund loss during insufficient funds or overdraft breaches.
+
+---
+
+## 🚀 Quick Start Guide (Windows CMD)
+
+### Prerequisites:
+1. **Windows 10 / 11** with **Command Prompt (CMD)** or PowerShell.
+2. **Java 21+** installed (`java -version`).
+3. **Maven 3.8+** installed (`mvn -version`).
+4. **Docker Desktop** installed & running (for Oracle Database).
+
+---
+
+### Step 1: Start Oracle Database in Docker
+Open Windows Command Prompt in the project directory and run:
+```cmd
+start-db.bat
+```
+*(Or manually: `docker compose up -d`)*  
+This starts the `fincore-oracle-db` container on port `1521` and executes the initialization scripts (`init-scripts/01_schema.sql` and `init-scripts/02_seed.sql`).
+
+---
+
+### Step 2: Launch the Application
+
+#### Option A: Launch the JavaFX 21 Desktop GUI (Recommended)
+Double-click `run-gui.bat` or run:
+```cmd
+run.bat
+```
+*(Alternatively: `mvn javafx:run`)*
+
+#### Option B: Run Automated Verification & Capstone Demo
+Double-click `run-demo.bat` or run:
+```cmd
+run.bat --demo
+```
+This executes all 8 capstone verification steps in the terminal with formatted tables and real-time SQL statements.
+
+#### Option C: Run Interactive Windows CMD Console Menu
+Double-click `run-cli.bat` or run:
+```cmd
+run.bat --cli
+```
+
+#### Option D: Run Unit & Integration Tests
+```cmd
+run.bat --test
+```
+*(Executes all 14 JUnit 5 tests, ensuring 100% passing build)*
+
+---
+
+### Step 3: Stop Oracle Database (When Finished)
+```cmd
+stop-db.bat
+```
+
+---
+
+## 🐧 Linux / macOS Execution
+
+```bash
+# 1. Start Oracle in Docker
+./start-db.sh
+
+# 2. Launch GUI or Demo
+./run.sh --gui       # JavaFX GUI
+./run.sh --demo      # Automated Capstone Verification
+./run.sh --cli       # Interactive Terminal
+./run.sh --test      # Run JUnit 5 Tests
+
+# 3. Stop Oracle DB
+./stop-db.sh
+```
 
 ---
 
@@ -51,261 +154,213 @@ erDiagram
     BUDGETS ||--o{ FINANCIAL_RECORDS : "tracks spending (1:N)"
 
     USERS {
-        BIGINT id PK "Auto Increment / Sequence"
+        BIGINT id PK "Sequence: seq_users"
         VARCHAR username UK "Unique Login Handle"
         VARCHAR password "Hashed / Secured Password"
-        VARCHAR full_name "Display Name"
-        VARCHAR role "ADMIN / FINANCE_OFFICER"
+        VARCHAR full_name "User Full Name"
+        VARCHAR role "ADMIN / FINANCE_OFFICER / USER"
         VARCHAR status "ACTIVE / SUSPENDED"
-        TIMESTAMP created_at "Creation Date"
+        TIMESTAMP created_at "Account Creation Timestamp"
     }
 
     CUSTOMERS {
-        BIGINT id PK "Auto Increment / Sequence"
-        VARCHAR customer_code UK "Unique Code (e.g. CUST-1001)"
+        BIGINT id PK "Sequence: seq_customers"
+        VARCHAR customer_code UK "Unique Identifier (e.g. CUST-1001)"
         VARCHAR name "Full Name"
         VARCHAR email UK "Unique Email Address"
         VARCHAR phone "Contact Number"
-        VARCHAR role "CUSTOMER / ADMIN"
-        VARCHAR status "ACTIVE / SUSPENDED"
+        VARCHAR role "CUSTOMER / ADMIN / MANAGER"
+        VARCHAR status "ACTIVE / SUSPENDED / CLOSED"
         TIMESTAMP created_at "Registration Timestamp"
     }
 
     ACCOUNTS {
-        VARCHAR account_number PK "Account Code (e.g. SAV-100101)"
-        BIGINT customer_id FK "References CUSTOMERS(id)"
+        VARCHAR account_number PK "Unique Account Code (e.g. SAV-100101)"
+        BIGINT customer_id FK "References CUSTOMERS(id) ON DELETE CASCADE"
         VARCHAR account_type "SAVINGS / CHECKING"
-        DECIMAL balance "Current Balance"
+        DECIMAL balance "Current Available Balance"
         DECIMAL interest_rate "Annual APR (for Savings)"
         DECIMAL overdraft_limit "Credit Allowance (for Checking)"
         VARCHAR status "ACTIVE / FROZEN / CLOSED"
-        TIMESTAMP created_at "Creation Timestamp"
-    }
-
-    FINANCIAL_RECORDS {
-        BIGINT id PK "Auto Increment / Sequence"
-        VARCHAR record_type "INCOME / EXPENSE"
-        VARCHAR category "Salary, Housing, Cloud, etc."
-        DECIMAL amount "Monetary Value (>0)"
-        VARCHAR account_number FK "References ACCOUNTS"
-        VARCHAR description "Memo / Purpose"
-        DATE record_date "Record Date"
-        TIMESTAMP created_at "Created Timestamp"
-    }
-
-    BUDGETS {
-        BIGINT id PK "Auto Increment / Sequence"
-        VARCHAR category UK "Unique Category Name"
-        DECIMAL monthly_limit "Allocated Limit ($)"
-        TIMESTAMP created_at "Creation Timestamp"
+        TIMESTAMP created_at "Account Creation Timestamp"
     }
 
     TRANSACTIONS {
-        BIGINT id PK "Auto Increment / Sequence"
+        BIGINT id PK "Sequence: seq_transactions"
         VARCHAR transaction_id UK "UUID Reference"
-        VARCHAR account_number FK "References ACCOUNTS"
-        VARCHAR type "DEPOSIT / WITHDRAWAL / TRANSFER"
-        DECIMAL amount "Transaction Value"
-        DECIMAL balance_after "Ledger Balance After"
-        VARCHAR target_account "Counterparty Account"
-        VARCHAR description "Memo / Purpose"
+        VARCHAR account_number FK "References ACCOUNTS(account_number)"
+        VARCHAR type "DEPOSIT / WITHDRAWAL / TRANSFER_OUT / TRANSFER_IN"
+        DECIMAL amount "Transaction Value (>0)"
+        DECIMAL balance_after "Ledger Balance After Execution"
+        VARCHAR target_account "Recipient/Sender Account Number"
+        VARCHAR description "Memo or Transaction Purpose"
         TIMESTAMP created_at "Execution Timestamp"
     }
 
+    FINANCIAL_RECORDS {
+        BIGINT id PK "Sequence: seq_financial_records"
+        VARCHAR record_type "INCOME / EXPENSE"
+        VARCHAR category "Salary, Housing, Groceries, Cloud, etc."
+        DECIMAL amount "Monetary Value (>0)"
+        VARCHAR account_number FK "References ACCOUNTS(account_number)"
+        VARCHAR description "User Description / Memo"
+        DATE record_date "Date of Income/Expense"
+        TIMESTAMP created_at "Record Timestamp"
+    }
+
+    BUDGETS {
+        BIGINT id PK "Sequence: seq_budgets"
+        VARCHAR category UK "Unique Category Name"
+        DECIMAL monthly_limit "Allocated Budget Limit ($)"
+        TIMESTAMP created_at "Creation Timestamp"
+    }
+
     AUDIT_LOGS {
-        BIGINT id PK "Auto Increment / Sequence"
-        VARCHAR action "Action Code"
-        VARCHAR entity_type "Target Entity"
-        VARCHAR entity_id "Target Key"
-        VARCHAR performed_by "Operator"
-        TEXT details "Audit Details"
+        BIGINT id PK "Sequence: seq_audit_logs"
+        VARCHAR action "SYSTEM Action Code"
+        VARCHAR entity_type "Target Entity Name"
+        VARCHAR entity_id "Target Entity Key"
+        VARCHAR performed_by "Operator or System User"
+        TEXT details "Operation Payload and Audit Trace"
         TIMESTAMP timestamp "Occurrence Timestamp"
     }
 ```
 
-> 📖 **Full System Diagrams**: Detailed UML Class Diagram, Sequence Diagram, and Schema Data Dictionary are available in [`docs/ERD_AND_UML.md`](docs/ERD_AND_UML.md).  
-> 🎤 **Group Presentation Script**: Four-person explanatory presentation speech script is in [`speech.md`](speech.md).
-
 ---
 
-## 💎 Object-Oriented Principles (OOP) in Action
+## 🏗️ 3-Tier Enterprise System Architecture
 
-| OOP Tenet | Implementation in FinCore |
-|---|---|
-| **Encapsulation** | Sensitive fields (`balance`, `customerId`, `status`) are strictly private in [`Account`](src/main/java/com/fincore/model/Account.java), [`Customer`](src/main/java/com/fincore/model/Customer.java), and [`FinancialRecord`](src/main/java/com/fincore/model/FinancialRecord.java). Invariants are enforced on deposits, withdrawals, and updates. |
-| **Inheritance** | Base class [`User`](src/main/java/com/fincore/model/User.java) is extended by `Customer` and `Admin`. Base class [`Account`](src/main/java/com/fincore/model/Account.java) is extended by [`SavingsAccount`](src/main/java/com/fincore/model/SavingsAccount.java) and [`CheckingAccount`](src/main/java/com/fincore/model/CheckingAccount.java). |
-| **Polymorphism** | Runtime dynamic method dispatch: `canWithdraw(amount)` validates minimum balances for Savings accounts vs. credit overdraft for Checking accounts. `calculateMonthlyInterestOrFee()` returns positive APR interest for Savings and negative maintenance fees for Checking. |
-| **Abstraction & Repositories** | Data access is separated via interfaces: [`FinancialRecordRepository`](src/main/java/com/fincore/repository/FinancialRecordRepository.java), [`UserRepository`](src/main/java/com/fincore/repository/UserRepository.java), [`AccountRepository`](src/main/java/com/fincore/repository/AccountRepository.java), and [`BudgetRepository`](src/main/java/com/fincore/repository/BudgetRepository.java). |
+```mermaid
+graph TD
+    subgraph Presentation Tier (Windows CMD & JavaFX Desktop)
+        UI_GUI["🖥️ JavaFX 21 GUI (MainApp, LoginView, Dashboard, CRUD Dialogs)"]
+        UI_CLI["💻 Windows CMD Terminal (run-cli.bat / ConsoleMenu)"]
+        UI_DEMO["🚀 Capstone Automated Verification (run-demo.bat / DemoRunner)"]
+    end
 
----
+    subgraph Business Service Tier
+        AUTH_SVC["AuthService (User Authentication & Session Audit)"]
+        FIN_SVC["FinanceService (CRUD Management & Aggregations)"]
+        BANK_SVC["BankingService (PL/SQL Transfers & ACID Fallback)"]
+        CUST_SVC["CustomerService (Customer Onboarding & Accounts)"]
+        RPT_SVC["ReportService (Relational Views & Portfolio Analytics)"]
+    end
 
----
+    subgraph Data Access Repository Tier
+        USER_REPO["UserRepository (JdbcUserRepository)"]
+        FIN_REPO["FinancialRecordRepository (JdbcFinancialRecordRepository)"]
+        BUDGET_REPO["BudgetRepository (JdbcBudgetRepository)"]
+        ACC_REPO["AccountRepository (JdbcAccountRepository)"]
+        TX_REPO["TransactionRepository (JdbcTransactionRepository)"]
+        AUDIT_REPO["AuditLogRepository (JdbcAuditLogRepository)"]
+    end
 
-## 🪟 Windows Execution & Native GUI Experience
+    subgraph Relational DBMS Tier
+        DB_CONN["DatabaseManager (Dual Oracle PDB Discovery & SQL Observer)"]
+        ORACLE_DOCKER[("🐳 Oracle Database Free in Docker (Port 1521 / FREEPDB1)")]
+        SQLITE_DB[("💾 Embedded SQLite Engine (Zero-Config Fallback)")]
+    end
 
-FinCore is engineered to provide a first-class **Windows GUI desktop experience** across all Windows systems (**Windows 11, Windows 10, Windows 8, Windows 7, Windows Server**):
+    UI_GUI --> AUTH_SVC
+    UI_GUI --> FIN_SVC
+    UI_GUI --> BANK_SVC
+    UI_GUI --> RPT_SVC
+    UI_CLI --> BANK_SVC
+    UI_DEMO --> AUTH_SVC
+    UI_DEMO --> FIN_SVC
 
-* **Native Windows Look & Feel**: Uses `WindowsLookAndFeel` with native window borders, titlebars, buttons, Segoe UI typography, and high-DPI scaling.
-* **Custom Taskbar Icon**: Displays a branded "FC" FinCore application icon on the Windows taskbar and titlebar.
-* **Default Launch Mode**: Opening without flags immediately launches the **Java Swing GUI** (`LoginFrame` $\to$ `FinanceDashboardFrame`).
+    AUTH_SVC --> USER_REPO
+    FIN_SVC --> FIN_REPO
+    FIN_SVC --> BUDGET_REPO
+    BANK_SVC --> ACC_REPO
+    BANK_SVC --> TX_REPO
+    BANK_SVC --> AUDIT_REPO
+    RPT_SVC --> DB_CONN
 
-### Windows Launcher Shortcuts:
-| Windows File | Action / Description |
-|---|---|
-| 🖱️ **`run.bat`** | **Universal Launcher**: Double-click to start the Java Swing GUI automatically. |
-| 🖱️ **`run-gui.bat`** | **Direct GUI Shortcut**: Opens the Login Frame and Finance Dashboard directly. |
-| 🖱️ **`launch-gui.vbs`** | **Silent GUI Launcher**: Launches the GUI silently without opening any background black command prompt window. |
-| 🖱️ **`run-demo.bat`** | **Capstone Demo in CMD**: Runs the full 8-step verification demonstration in a colored terminal and pauses when finished. |
-| 🖱️ **`run-cli.bat`** | **Interactive CLI**: Opens the interactive terminal banking menu. |
+    USER_REPO --> DB_CONN
+    FIN_REPO --> DB_CONN
+    BUDGET_REPO --> DB_CONN
+    ACC_REPO --> DB_CONN
+    TX_REPO --> DB_CONN
+    AUDIT_REPO --> DB_CONN
 
-### Running on Windows via Command Prompt / PowerShell:
-```cmd
-:: 1. Launch GUI directly
-run.bat --gui
-
-:: 2. Run Automated Capstone Demonstration
-run.bat --demo
-
-:: 3. Run Interactive Console Menu
-run.bat --cli
-
-:: 4. Direct Java execution
-java -jar target\oop-dbms-capstone-1.0.0-jar-with-dependencies.jar
+    DB_CONN -.->|ojdbc11 23.26.3.0.0| ORACLE_DOCKER
+    DB_CONN -.->|sqlite-jdbc Driver| SQLITE_DB
 ```
 
 ---
 
-## 🖥️ Capstone Demonstration Workflow
+## 🎬 Capstone Demonstration Walkthrough (8-Step Script)
 
-### 1. Launch Options (Linux / macOS / Windows)
+When presenting to evaluators, follow this sequence:
 
-```bash
-# Windows:
-run.bat --gui      # Launch Java Swing GUI (or double-click run.bat)
-run.bat --demo     # Run Capstone Demonstration (or double-click run-demo.bat)
-run.bat --cli      # Interactive Terminal Console
-
-# Linux / macOS:
-./run.sh --gui     # Launch Java Swing GUI (auto-detects X11/xvfb)
-./run.sh --demo    # Run Capstone Demonstration
-./run.sh --cli     # Interactive Terminal Console
-./run.sh --test    # Run Complete Test Suite (14 Unit & Integration Tests)
-```
-
-### 2. Capstone Step-by-Step Demonstration Sequence
-When running `./run.sh --demo` or `run.bat --demo` (or clicking **"🚀 Run Full Capstone Demonstration"** inside the GUI Login window), the system automatically executes and verifies:
-1. **Application Start & Database Connectivity**: Initializes JDBC connection pool to Oracle 10g XE (or embedded SQLite).
-2. **Database Authentication (Login)**:
-   - Tests rejection of invalid credentials.
-   - Executes SQL `SELECT ... FROM users WHERE username = ? AND password = ? AND status = 'ACTIVE'`.
-   - Logs session in `audit_logs` and grants access.
-3. **Open Finance Dashboard**: Loads global liquidity, revenue, expenses, and net cash flow.
-4. **Complete CRUD Lifecycle**:
-   - **INSERT**: `INSERT INTO financial_records (...) VALUES (...)` $\to$ Returns auto-generated ID `#8`.
-   - **SELECT**: `SELECT ... FROM financial_records WHERE id = 8` $\to$ Displays persisted record.
-   - **UPDATE**: `UPDATE financial_records SET amount = 585.50, description = '...' WHERE id = 8` $\to$ Confirms row modification.
-   - **DELETE**: `DELETE FROM financial_records WHERE id = 8` $\to$ Verifies record removal (0 rows).
-5. **Polymorphic Account Modeling**: Savings APR interest credit vs. Checking maintenance fee debit.
-6. **ACID Transaction Commit**: $1,500 inter-account transfer with synchronous balance update.
-7. **ACID Transaction Rollback**: Intercepts illegal overdraft and rolls back with zero fund leakage.
-8. **Relational Analytics**: Customer portfolio JOINs and budget expenditure calculations.
+1. **Start Oracle Database in Docker:**
+   Run `start-db.bat` and verify that the container is healthy on port `1521`.
+2. **Launch JavaFX GUI:**
+   Run `run.bat` or double-click `run-gui.bat`. Point out the active database indicator showing Oracle connection to `FREEPDB1`.
+3. **Database-Backed Authentication:**
+   Click **Admin Quick Fill** (`admin` / `admin123`) and click **Sign In**. The system validates credentials against Oracle's `users` table via `PreparedStatement`.
+4. **Inspect Overview Dashboard:**
+   Show the real-time financial KPI cards and the dynamic Income vs. Expense charts.
+5. **Demonstrate Complete CRUD Lifecycle (Tab 2):**
+   - **INSERT:** Click `➕ Add Record`, enter an Expense of `$540.00` for `Cloud Infrastructure` with account `CHK-100102`. Save and show the newly created row with Oracle Sequence ID.
+   - **SELECT:** Filter records by `EXPENSE` and show dynamic TableView updates.
+   - **UPDATE:** Select the record, click `✏️ Edit Record`, change the amount to `$620.00`, and show instant recalculation of metrics and budget gauges.
+   - **DELETE:** Click `🗑️ Delete Record`, confirm deletion, and verify that the row is purged from Oracle DB.
+6. **Demonstrate PL/SQL Fund Transfer:**
+   Click `💸 New Transfer`, transfer `$500.00` from `CHK-100102` to `SAV-100101`. Show that `PKG_BANKING_OPERATIONS.TRANSFER_FUNDS` executes atomically inside Oracle, updating balances and inserting double-entry ledger transactions.
+7. **Inspect Relational Views:**
+   Switch to the **Relational Views** tab and show live outputs from `v_customer_portfolio` and `v_budget_summary`.
+8. **Live SQL Console & Observer Stream:**
+   Switch to **Live SQL Console**, run `SELECT * FROM v_budget_summary;`, and highlight the bottom stream inspector showing query duration in milliseconds.
 
 ---
 
-## ⚙️ Database Configuration (Oracle 10g XE / SQLite / MySQL)
-
-Edit `src/main/resources/db.properties`:
-
-```properties
-# ====================================================================
-# FinCore Database Configuration
-# Default DBMS Engine: Oracle 10g Express Edition (XE)
-# ====================================================================
-
-db.type=oracle
-
-# --------------------------------------------------------------------
-# Oracle 10g XE Configuration (Default):
-# --------------------------------------------------------------------
-oracle.driver=oracle.jdbc.OracleDriver
-oracle.url=jdbc:oracle:thin:@localhost:1521:xe
-oracle.user=system
-oracle.password=oracle
-oracle.fallback.sqlite=true
-
-# --------------------------------------------------------------------
-# SQLite Configuration (Offline Fallback & Embedded Engine):
-# --------------------------------------------------------------------
-sqlite.url=jdbc:sqlite:fincore_banking.db
-
-# --------------------------------------------------------------------
-# MySQL Configuration:
-# --------------------------------------------------------------------
-mysql.url=jdbc:mysql://localhost:3306/fincore_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-mysql.user=root
-mysql.password=
-```
-
----
-
-## 📂 Project Structure
+## 📁 Repository Structure
 
 ```
 oop-dbms-capstone/
-├── pom.xml                               # Maven build file (ojdbc11, sqlite, mysql, junit5)
-├── run.sh                                # Multi-mode execution script (--gui, --demo, --cli, --test)
-├── speech.md                             # 4-Person presentation speech & script
-├── README.md                             # System manual & technical documentation
+├── docker-compose.yml              # Oracle Database Free container definition
+├── init-scripts/                   # Container entrypoint SQL initialization
+│   ├── 01_schema.sql               # Oracle DDL: Tables, Sequences, Triggers, Views, PL/SQL
+│   └── 02_seed.sql                 # Oracle DML: Seed users, accounts, records, budgets
+├── start-db.bat / start-db.sh      # Launch Oracle in Docker (Windows / Linux)
+├── stop-db.bat / stop-db.sh        # Stop Oracle in Docker (Windows / Linux)
+├── run.bat                         # Windows CMD universal launcher
+├── run-gui.bat                     # One-click Windows GUI launcher (JavaFX 21)
+├── run-demo.bat                    # One-click Windows automated demo launcher
+├── run-cli.bat                     # One-click Windows terminal launcher
+├── pom.xml                         # Maven build file (Java 21, JavaFX 21, ojdbc11 23.26.3.0.0)
+├── speech.md                       # 4-person presentation script for project defense
 ├── docs/
-│   └── ERD_AND_UML.md                    # ER Diagram, UML Class Diagram, Data Dictionary
-├── src/
-│   ├── main/
-│   │   ├── java/com/fincore/
-│   │   │   ├── Main.java                 # System entrypoint, DI wiring & mode detector
-│   │   │   ├── config/DatabaseConfig.java# JDBC & properties singleton
-│   │   │   ├── db/
-│   │   │   │   ├── DatabaseManager.java  # Connection handling & SQL listener
-│   │   │   │   └── MigrationRunner.java  # Auto DDL & seed script executor
-│   │   │   ├── model/                    # Domain entities
-│   │   │   │   ├── AuthUser.java         # User entity for DB authentication
-│   │   │   │   ├── FinancialRecord.java  # Income & Expense CRUD entity
-│   │   │   │   ├── Budget.java           # Budget category limit entity
-│   │   │   │   ├── Account.java          # Abstract account
-│   │   │   │   ├── SavingsAccount.java   # Extends Account (APR interest)
-│   │   │   │   ├── CheckingAccount.java  # Extends Account (Overdraft limit)
-│   │   │   │   ├── Customer.java         # Customer entity
-│   │   │   │   ├── Transaction.java      # Ledger record
-│   │   │   │   └── AuditLog.java         # Audit log entity
-│   │   │   ├── repository/               # Data Access Object contracts
-│   │   │   │   ├── UserRepository.java
-│   │   │   │   ├── FinancialRecordRepository.java
-│   │   │   │   ├── BudgetRepository.java
-│   │   │   │   ├── AccountRepository.java
-│   │   │   │   ├── CustomerRepository.java
-│   │   │   │   ├── TransactionRepository.java
-│   │   │   │   └── impl/                 # JDBC Implementations
-│   │   │   ├── service/                  # Business & Transaction services
-│   │   │   │   ├── AuthService.java      # DB login & session verification
-│   │   │   │   ├── FinanceService.java   # CRUD operations & metrics
-│   │   │   │   ├── BankingService.java   # ACID transfer coordination
-│   │   │   │   └── ReportService.java    # Analytical SQL queries
-│   │   │   └── ui/                       # UI Layer
-│   │   │       ├── swing/
-│   │   │       │   ├── LoginFrame.java   # Swing database login screen
-│   │   │       │   ├── FinanceDashboardFrame.java # Multi-tab dashboard
-│   │   │       │   └── RecordDialog.java # CRUD INSERT/UPDATE modal
-│   │   │       ├── ConsoleMenu.java      # Interactive CLI terminal
-│   │   │       └── DemoRunner.java       # Automated Capstone demonstration
-│   │   └── resources/
-│   │       ├── db.properties             # Database connection settings
-│   │       ├── schema-oracle10g.sql      # Oracle 10g XE DDL (sequences & triggers)
-│   │       ├── seed-oracle10g.sql        # Oracle 10g XE seed data
-│   │       ├── schema-sqlite.sql         # SQLite DDL
-│   │       └── seed.sql                  # Seed data
-│   └── test/java/com/fincore/
-│       ├── AuthIntegrationTest.java      # Database authentication tests
-│       ├── FinanceCrudIntegrationTest.java # Complete CRUD lifecycle tests
-│       ├── BankingServiceTest.java       # ACID atomicity & rollback tests
-│       ├── RepositoryIntegrationTest.java# Analytical JOIN queries
-│       └── AccountPolymorphismTest.java  # OOP polymorphism tests
+│   └── ERD_AND_UML.md              # Complete ER Diagram, UML Class Diagrams & Sequence Specs
+└── src/
+    ├── main/
+    │   ├── java/com/fincore/
+    │   │   ├── Main.java           # Universal CLI/headless entrypoint
+    │   │   ├── MainApp.java        # JavaFX 21 Application entrypoint
+    │   │   ├── config/             # Database configuration
+    │   │   ├── db/                 # DatabaseManager, SQL listener, MigrationRunner
+    │   │   ├── model/              # Domain classes (Account, Savings, Checking, Customer, etc.)
+    │   │   ├── repository/         # CRUD repository interfaces and JDBC implementations
+    │   │   ├── service/            # BankingService (PL/SQL transfers), FinanceService, AuthService
+    │   │   └── ui/
+    │   │       ├── DemoRunner.java # Automated 8-step verification engine
+    │   │       ├── ConsoleMenu.java# Windows CMD interactive terminal menu
+    │   │       └── javafx/         # JavaFX 21 views (LoginView, Dashboard, CRUD Dialogs)
+    │   └── resources/
+    │       ├── db.properties       # Database connection properties
+    │       ├── css/dark-theme.css  # Modern financial dark theme styling
+    │       ├── schema-oracle.sql   # Oracle Database Free / 23c schema with PL/SQL
+    │       ├── seed-oracle.sql     # Oracle seed dataset
+    │       ├── schema-sqlite.sql   # Embedded SQLite fallback schema
+    │       └── seed-sqlite.sql     # Embedded SQLite fallback seed dataset
+    └── test/                       # 14 JUnit 5 unit and integration tests
 ```
+
+---
+
+## 👥 Presentation Team & Contact
+
+Developed for the **Object-Oriented Programming & Database Management Systems Capstone Project**.  
+For questions, presentation slides, or repository contributions, visit [GitHub Repository](https://github.com/SmitroniX/FINCORE-OOP-DBMS-CAPSTONE-BANKING-SYSTEM).
