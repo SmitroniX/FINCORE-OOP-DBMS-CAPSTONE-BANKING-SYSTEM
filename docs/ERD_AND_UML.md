@@ -472,9 +472,8 @@ graph TD
     end
 
     subgraph Relational DBMS Tier
-        DB_CONN["DatabaseManager (Dual Oracle PDB Discovery & SQL Observer)"]
+        DB_CONN["DatabaseManager (Connection Pool & SQL Observer)"]
         ORACLE_DOCKER[("🐳 Oracle Database Free in Docker (Port 1521 / FREEPDB1)")]
-        SQLITE_DB[("💾 Embedded SQLite Engine (Zero-Config Fallback)")]
     end
 
     UI_GUI --> AUTH_SVC
@@ -500,8 +499,7 @@ graph TD
     TX_REPO --> DB_CONN
     AUDIT_REPO --> DB_CONN
 
-    DB_CONN -.->|ojdbc11 23.26.3.0.0| ORACLE_DOCKER
-    DB_CONN -.->|sqlite-jdbc Driver| SQLITE_DB
+    DB_CONN -->|ojdbc11:23.26.3.0.0| ORACLE_DOCKER
 ```
 
 ---

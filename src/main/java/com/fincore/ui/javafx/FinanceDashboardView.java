@@ -145,11 +145,11 @@ public class FinanceDashboardView extends BorderPane implements DatabaseManager.
         boolean isOracle = DatabaseManager.getInstance().isOracle();
         HBox dbBadge = new HBox(6);
         dbBadge.setAlignment(Pos.CENTER);
-        Circle dot = new Circle(4, isOracle ? Color.web("#4ade80") : Color.web("#facc15"));
-        Label dbLbl = new Label(isOracle ? "Oracle DB (Docker 1521)" : "SQLite Engine (Fallback)");
-        dbLbl.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + (isOracle ? "#4ade80" : "#facc15") + ";");
+        Circle dot = new Circle(4, isOracle ? Color.web("#4ade80") : Color.web("#38bdf8"));
+        Label dbLbl = new Label(isOracle ? "Oracle DB (FREEPDB1:1521)" : "Oracle Database Engine");
+        dbLbl.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + (isOracle ? "#4ade80" : "#38bdf8") + ";");
         dbBadge.getChildren().addAll(dot, dbLbl);
-        dbBadge.getStyleClass().add(isOracle ? "badge-db-oracle" : "badge-db-sqlite");
+        dbBadge.getStyleClass().add("badge-db-oracle");
 
         // User info
         AuthUser user = authService.getCurrentUser();

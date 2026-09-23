@@ -245,24 +245,29 @@
 ## 🎯 Evaluator Q&A Preparation & Technical Defense
 
 ### 1. How do you run the application during the evaluation?
+
 ```cmd
-:: On Windows CMD:
-start-db.bat          :: 1. Start Oracle Database container in Docker
-run.bat               :: 2. Launch JavaFX 21 GUI (or run-gui.bat)
-run.bat --demo        :: 3. Run automated verification showcase in CMD
-run.bat --cli         :: 4. Run interactive console terminal
-run.bat --test        :: 5. Run JUnit 5 test suite (14/14 tests passing)
+:: Method A: Pure Maven Execution (Standard & Cross-Platform)
+mvn javafx:run        :: 1. Launch JavaFX 21 GUI directly connected to Oracle DB (or simply 'mvn')
+mvn exec:java -Dexec.args="--demo" :: 2. Run automated 8-step Capstone Demo in terminal
+mvn exec:java -Dexec.args="--cli"  :: 3. Run interactive console menu in CMD
+mvn test              :: 4. Run JUnit 5 test suite (14/14 tests passing)
+
+:: Method B: Windows CMD 1-Click All-In-One Launcher
+run.bat               :: Auto-starts Docker, waits for Oracle FREEPDB1, launches GUI
+run.bat --demo        :: Runs automated demonstration
+run.bat --cli         :: Runs interactive terminal menu
+run.bat --test        :: Runs test suite
 
 # On Linux / macOS:
-./start-db.sh         # Start Oracle Database container in Docker
-./run.sh --gui        # Launch JavaFX GUI
+./run.sh --gui        # Launch JavaFX GUI (auto-starts Docker & Oracle)
 ./run.sh --demo       # Run automated verification showcase
 ```
 
 ### 2. High-Frequency Technical Questions & Answers:
 
 **Q1: How does your application connect to Oracle Database running in Docker?**  
-> *Answer:* We run the official `gvenzl/oracle-free:23-slim` image in Docker, exposing port `1521`. In `db.properties`, we connect via the standard thin JDBC URL `jdbc:oracle:thin:@localhost:1521/FREEPDB1` using Oracle's official `ojdbc11` driver (version `23.26.3.0.0`). If Oracle is temporarily offline, our `DatabaseManager` automatically fails over to an embedded SQLite database for zero-downtime demonstration.
+> *Answer:* We run the official `gvenzl/oracle-free:23-slim` image in Docker, exposing port `1521`. In `db.properties`, we connect via the thin JDBC URL `jdbc:oracle:thin:@localhost:1521/FREEPDB1` using Oracle's official `ojdbc11` driver (version `23.26.3.0.0`). The system is strictly configured for Oracle Database (`oracle.fallback.sqlite=false`), and `DatabaseManager` includes a smart retry mechanism that waits for the Oracle Pluggable Database `FREEPDB1` to complete service registration upon startup.
 
 **Q2: What is the purpose of the PL/SQL package `PKG_BANKING_OPERATIONS`?**  
 > *Answer:* Moving critical banking operations like `TRANSFER_FUNDS` into a PL/SQL package reduces network round-trips between Java and the database, enforces business rules inside the database engine, and guarantees atomicity at the server level.

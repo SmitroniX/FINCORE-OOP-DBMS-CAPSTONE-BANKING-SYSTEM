@@ -7,7 +7,7 @@
 [![Build](https://img.shields.io/badge/Build-Maven%20Passing-success.svg)](https://maven.apache.org/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20CMD%20%7C%20Linux-lightgrey.svg)](https://github.com/SmitroniX/FINCORE-OOP-DBMS-CAPSTONE-BANKING-SYSTEM)
 
-An enterprise-grade Java application and Relational Database Management System (DBMS) Capstone Project demonstrating modern **Object-Oriented Programming (OOP)** paradigms alongside **Enterprise Relational DBMS** engineering. Powered by **Java 21**, **JavaFX 21**, containerized **Oracle Database** in Docker, official **Oracle JDBC (`ojdbc11:23.26.3.0.0`)**, **PL/SQL Stored Packages**, **Database Triggers**, and **Relational Views**. Fully configured for seamless execution on **Windows Command Prompt (CMD)** via automated batch scripts.
+An enterprise-grade Java application and Relational Database Management System (DBMS) Capstone Project demonstrating modern **Object-Oriented Programming (OOP)** paradigms alongside **Enterprise Relational DBMS** engineering. Powered by **Java 21**, **JavaFX 21**, containerized **Oracle Database** in Docker, official **Oracle JDBC (`ojdbc11:23.26.3.0.0`)**, **PL/SQL Stored Packages**, **Database Triggers**, and **Relational Views**.
 
 ---
 
@@ -17,16 +17,98 @@ An enterprise-grade Java application and Relational Database Management System (
 |---|---|---|---|
 | **Language** | **Java 21 (LTS)** | JDK 21 | Core language, record types, strong type contracts |
 | **UI Framework** | **JavaFX 21** | OpenJFX 21.0.2 (`javafx-controls`, `javafx-fxml`) | Modern reactive desktop dashboard, dark financial theme, charts |
-| **Build Tool** | **Apache Maven** | `javafx-maven-plugin:0.0.8`, `exec-maven-plugin:3.1.1` | Dependency resolution, test runner, GUI launcher (`mvn javafx:run`) |
+| **Build Tool** | **Apache Maven** | `javafx-maven-plugin:0.0.8`, `exec-maven-plugin:3.1.1` | Dependency resolution, test runner, default goal `javafx:run` |
 | **Database Engine** | **Oracle Database** | Docker (`gvenzl/oracle-free:23-slim`), Port 1521 | Containerized enterprise RDBMS with PDB `FREEPDB1` |
-| **JDBC Driver** | **Oracle JDBC** | `com.oracle.database.jdbc:ojdbc11:23.26.3.0.0` | High-performance thin driver with pooled connections |
+| **JDBC Driver** | **Oracle JDBC** | `com.oracle.database.jdbc:ojdbc11:23.26.3.0.0` | High-performance thin driver with connection pooling |
 | **In-DB Logic** | **PL/SQL Packages** | `PKG_BANKING_OPERATIONS` | In-database stored procedures (`TRANSFER_FUNDS`, `ADD_RECORD`, etc.) |
 | **DBMS Automation** | **Triggers & Views** | `trg_audit_tx`, `v_customer_portfolio`, `v_budget_summary` | Automated audit logging, threshold alert checking, analytical views |
-| **Execution** | **Windows CMD** | `run.bat`, `start-db.bat`, `stop-db.bat`, `run-gui.bat` | One-click Windows CMD orchestration |
+| **Execution** | **Maven / Windows CMD** | `mvn javafx:run`, `run.bat`, `start-db.bat` | Pure Maven execution & Windows CMD 1-click batch orchestration |
 
 ---
 
-## 🏛️ Core Features & Capabilities
+## ☕ Pure Maven Execution (`mvn`)
+
+You can execute everything directly through standard **Maven commands** in your terminal or Command Prompt:
+
+### 1. Launch JavaFX 21 Desktop GUI (Connected to Oracle DB)
+```cmd
+mvn javafx:run
+```
+*(Or simply **`mvn`** by itself, as `javafx:run` is configured as the default build goal in `pom.xml`)*
+
+* Compiles all classes on Java 21.
+* Injects JavaFX 21 modules (`javafx.controls`, `javafx.fxml`).
+* Connects strictly to Oracle Database (`FREEPDB1` on port 1521).
+* Opens the dark-themed financial dashboard with real-time KPI cards and charts.
+
+### 2. Run the 8-Step Capstone Automated Demonstration
+```cmd
+mvn exec:java -Dexec.args="--demo"
+```
+* Verifies Oracle DB connectivity.
+* Demonstrates DB-backed authentication against `users` table.
+* Executes full 4-step CRUD lifecycle (INSERT, SELECT, UPDATE, DELETE) with real-time SQL execution timings (ms).
+* Demonstrates runtime polymorphism (`SavingsAccount` vs `CheckingAccount`).
+* Executes an ACID inter-account fund transfer and rollback guarantee.
+* Displays multi-table SQL JOIN customer portfolio analytics.
+
+### 3. Run the Interactive Windows Terminal Menu
+```cmd
+mvn exec:java -Dexec.args="--cli"
+```
+* Launches the interactive CLI banking console menu directly inside Command Prompt.
+
+### 4. Run Automated JUnit 5 Test Suite
+```cmd
+mvn test
+```
+* Executes all **14 unit and integration tests** (100% passing).
+
+### 5. Build Executable Fat JAR
+```cmd
+mvn clean package -DskipTests
+```
+* Compiles and packages `target/oop-dbms-capstone-1.0.0-jar-with-dependencies.jar`.
+
+---
+
+## 🚀 Windows CMD 1-Click All-In-One Launcher (`run.bat`)
+
+If you prefer a single command that manages Docker, starts Oracle, waits for readiness, and launches the app all at once:
+
+```cmd
+run.bat
+```
+*(Or simply double-click `run.bat` or `run-gui.bat` in Windows Explorer)*
+
+**What `run.bat` does automatically:**
+1. Checks that Java 21 and Docker Desktop are running.
+2. Checks if the Oracle container (`fincore-oracle-db`) is active; if not, starts it automatically via `docker compose up -d`.
+3. Monitors the container and waits until Oracle finishes initializing `FREEPDB1` and prints `DATABASE IS READY TO USE!`.
+4. Launches the JavaFX 21 GUI directly connected to Oracle Database on port 1521.
+5. **No SQLite**: Strictly connected to Oracle Database with zero fallback.
+
+### Other `run.bat` Modes:
+```cmd
+run.bat --demo       :: Run automated 8-step demonstration in CMD (or run-demo.bat)
+run.bat --cli        :: Interactive text-based console menu (or run-cli.bat)
+run.bat --test       :: Run all 14 JUnit 5 tests
+```
+
+---
+
+## 🐳 Docker Oracle Database Commands
+
+| Task | Command | Description |
+|---|---|---|
+| **Start Oracle Container** | `docker compose up -d` | Starts `fincore-oracle-db` on port 1521 |
+| **Check Container Status** | `docker compose ps` | Displays health status (`healthy` / `running`) |
+| **View Live Database Logs** | `docker compose logs -f` | Streams Oracle startup logs (`DATABASE IS READY TO USE!`) |
+| **Stop Oracle Container** | `docker compose down` | Stops and removes container; data persists in named volume |
+
+---
+
+## 🏛️ Core Features & Architectural Capabilities
 
 ### 1. 🔐 Database-Backed Authentication (Login)
 - Authenticates operators directly against Oracle Database (`users` table) using parameterized SQL queries.
@@ -34,6 +116,7 @@ An enterprise-grade Java application and Relational Database Management System (
 - Pre-seeded evaluation roles:
   - **Administrator:** `admin` / `admin123` (Full system and finance control)
   - **Finance Officer:** `asmit` / `password123` (Operational accounting & reports)
+  - **Customer:** `alice` / `alice123` (Customer portal view)
 
 ### 2. 💰 Complete Financial Record CRUD Module
 A comprehensive, end-to-end CRUD implementation on financial records:
@@ -57,68 +140,16 @@ A comprehensive, end-to-end CRUD implementation on financial records:
   - `TRANSFER_FUNDS`: Atomic inter-account money transfer executing within Oracle's kernel.
   - `ADD_FINANCIAL_RECORD`: Validated transaction record insertion.
   - `GET_CUSTOMER_NET_WORTH`: Instant portfolio calculation.
+  - `GET_CATEGORY_SPENT`: High-performance category spending computation.
 - **Triggers:**
-  - `trg_audit_tx`: Automatically logs every transaction to `audit_logs`.
+  - `trg_audit_tx`: Automatically logs every transaction insertion to `audit_logs`.
   - `trg_check_budget_alert`: Evaluates budget limits on expense insertions.
 - **Relational Views:**
   - `v_customer_portfolio`: Aggregates customer balances and active account counts.
   - `v_budget_summary`: Dynamic budget health indicator (`OK`, `WARNING`, `EXCEEDED`).
-- **ACID Fallback:** Automatic rollback guarantees zero fund loss during insufficient funds or overdraft breaches.
-
----
-
-## 🚀 Quick Start Guide (Windows CMD)
-
-### Prerequisites:
-1. **Windows 10 / 11** with **Command Prompt (CMD)** or PowerShell.
-2. **Java 21+** installed (`java -version`).
-3. **Maven 3.8+** installed (`mvn -version`).
-4. **Docker Desktop** installed & running (for Oracle Database).
-
----
-
-### Single Command All-In-One Run (Recommended)
-You only need to run **one command**:
-```cmd
-run.bat
-```
-*(Or simply double-click `run.bat` or `run-gui.bat`)*
-
-**What `run.bat` does automatically:**
-1. Verifies **Java 21** is active.
-2. Checks **Docker Desktop**; starts the Oracle Database container (`fincore-oracle-db`) automatically if it is not already running.
-3. Automatically monitors and verifies that Oracle Database service `FREEPDB1` is **100% ready and accepting connections**.
-4. Launches the **JavaFX 21 Enterprise Finance Dashboard** directly connected to Oracle Database (port 1521).
-5. **No SQLite**: Strictly connects to Oracle Database with zero fallback.
-
----
-
-### Command-line Modes:
-| Task | Windows CMD Command | Description |
-|---|---|---|
-| **Launch Desktop GUI** | `run.bat` (or `run-gui.bat`) | Boots Oracle & opens JavaFX 21 Finance Dashboard |
-| **Run Capstone Demo** | `run.bat --demo` (or `run-demo.bat`) | Runs full 8-step verification showcase in terminal |
-| **Interactive Terminal** | `run.bat --cli` (or `run-cli.bat`) | Interactive console menu in Windows CMD |
-| **Run Automated Tests** | `run.bat --test` | Executes 14/14 JUnit 5 tests |
-| **Stop Oracle Database** | `stop-db.bat` | Stops the Oracle Database Docker container |
-
----
-
-## 🐧 Linux / macOS Execution
-
-```bash
-# 1. Start Oracle in Docker
-./start-db.sh
-
-# 2. Launch GUI or Demo
-./run.sh --gui       # JavaFX GUI
-./run.sh --demo      # Automated Capstone Verification
-./run.sh --cli       # Interactive Terminal
-./run.sh --test      # Run JUnit 5 Tests
-
-# 3. Stop Oracle DB
-./stop-db.sh
-```
+  - `v_account_ledger`: Unified view joining accounts with full transaction histories.
+  - `v_monthly_financial_report`: Monthly aggregate income vs expenses.
+- **ACID Rollback Protection:** Explicit transaction boundaries (`conn.setAutoCommit(false)`) guarantee zero fund loss during insufficient funds or overdraft breaches.
 
 ---
 
@@ -212,10 +243,10 @@ erDiagram
 
 ```mermaid
 graph TD
-    subgraph Presentation Tier (Windows CMD & JavaFX Desktop)
-        UI_GUI["🖥️ JavaFX 21 GUI (MainApp, LoginView, Dashboard, CRUD Dialogs)"]
-        UI_CLI["💻 Windows CMD Terminal (run-cli.bat / ConsoleMenu)"]
-        UI_DEMO["🚀 Capstone Automated Verification (run-demo.bat / DemoRunner)"]
+    subgraph Presentation Tier (Maven & Windows CMD)
+        UI_GUI["🖥️ JavaFX 21 GUI (mvn javafx:run / run.bat)"]
+        UI_DEMO["🚀 Automated Capstone Demo (mvn exec:java -Dexec.args='--demo')"]
+        UI_CLI["💻 Interactive Terminal (mvn exec:java -Dexec.args='--cli')"]
     end
 
     subgraph Business Service Tier
@@ -236,9 +267,8 @@ graph TD
     end
 
     subgraph Relational DBMS Tier
-        DB_CONN["DatabaseManager (Dual Oracle PDB Discovery & SQL Observer)"]
+        DB_CONN["DatabaseManager (Connection Pool & SQL Observer)"]
         ORACLE_DOCKER[("🐳 Oracle Database Free in Docker (Port 1521 / FREEPDB1)")]
-        SQLITE_DB[("💾 Embedded SQLite Engine (Zero-Config Fallback)")]
     end
 
     UI_GUI --> AUTH_SVC
@@ -264,8 +294,7 @@ graph TD
     TX_REPO --> DB_CONN
     AUDIT_REPO --> DB_CONN
 
-    DB_CONN -.->|ojdbc11 23.26.3.0.0| ORACLE_DOCKER
-    DB_CONN -.->|sqlite-jdbc Driver| SQLITE_DB
+    DB_CONN -->|ojdbc11:23.26.3.0.0| ORACLE_DOCKER
 ```
 
 ---
@@ -274,14 +303,14 @@ graph TD
 
 When presenting to evaluators, follow this sequence:
 
-1. **Start Oracle Database in Docker:**
-   Run `start-db.bat` and verify that the container is healthy on port `1521`.
-2. **Launch JavaFX GUI:**
-   Run `run.bat` or double-click `run-gui.bat`. Point out the active database indicator showing Oracle connection to `FREEPDB1`.
+1. **Verify Oracle Database in Docker:**
+   Run `docker compose up -d` or let `run.bat` automatically verify port `1521` (`FREEPDB1`).
+2. **Launch Application:**
+   Run `mvn javafx:run` (or `run.bat`). Point out the active database indicator showing **`● Oracle Database (Docker FREEPDB1:1521)`**.
 3. **Database-Backed Authentication:**
    Click **Admin Quick Fill** (`admin` / `admin123`) and click **Sign In**. The system validates credentials against Oracle's `users` table via `PreparedStatement`.
 4. **Inspect Overview Dashboard:**
-   Show the real-time financial KPI cards and the dynamic Income vs. Expense charts.
+   Show the real-time financial KPI cards and dynamic Income vs Expense charts.
 5. **Demonstrate Complete CRUD Lifecycle (Tab 2):**
    - **INSERT:** Click `➕ Add Record`, enter an Expense of `$540.00` for `Cloud Infrastructure` with account `CHK-100102`. Save and show the newly created row with Oracle Sequence ID.
    - **SELECT:** Filter records by `EXPENSE` and show dynamic TableView updates.
@@ -306,11 +335,11 @@ oop-dbms-capstone/
 │   └── 02_seed.sql                 # Oracle DML: Seed users, accounts, records, budgets
 ├── start-db.bat / start-db.sh      # Launch Oracle in Docker (Windows / Linux)
 ├── stop-db.bat / stop-db.sh        # Stop Oracle in Docker (Windows / Linux)
-├── run.bat                         # Windows CMD universal launcher
+├── run.bat                         # Windows CMD all-in-one launcher (auto-starts Docker & app)
 ├── run-gui.bat                     # One-click Windows GUI launcher (JavaFX 21)
 ├── run-demo.bat                    # One-click Windows automated demo launcher
 ├── run-cli.bat                     # One-click Windows terminal launcher
-├── pom.xml                         # Maven build file (Java 21, JavaFX 21, ojdbc11 23.26.3.0.0)
+├── pom.xml                         # Maven build file (Java 21, JavaFX 21, ojdbc11 23.26.3.0.0, defaultGoal: javafx:run)
 ├── speech.md                       # 4-person presentation script for project defense
 ├── docs/
 │   └── ERD_AND_UML.md              # Complete ER Diagram, UML Class Diagrams & Sequence Specs
@@ -329,12 +358,12 @@ oop-dbms-capstone/
     │   │       ├── ConsoleMenu.java# Windows CMD interactive terminal menu
     │   │       └── javafx/         # JavaFX 21 views (LoginView, Dashboard, CRUD Dialogs)
     │   └── resources/
-    │       ├── db.properties       # Database connection properties
+    │       ├── db.properties       # Database connection properties (oracle.fallback.sqlite=false)
     │       ├── css/dark-theme.css  # Modern financial dark theme styling
     │       ├── schema-oracle.sql   # Oracle Database Free / 23c schema with PL/SQL
     │       ├── seed-oracle.sql     # Oracle seed dataset
-    │       ├── schema-sqlite.sql   # Embedded SQLite fallback schema
-    │       └── seed-sqlite.sql     # Embedded SQLite fallback seed dataset
+    │       ├── schema-sqlite.sql   # SQLite schema (for unit test suite)
+    │       └── seed-sqlite.sql     # SQLite seed data (for unit test suite)
     └── test/                       # 14 JUnit 5 unit and integration tests
 ```
 
@@ -343,4 +372,4 @@ oop-dbms-capstone/
 ## 👥 Presentation Team & Contact
 
 Developed for the **Object-Oriented Programming & Database Management Systems Capstone Project**.  
-For questions, presentation slides, or repository contributions, visit [GitHub Repository](https://github.com/SmitroniX/FINCORE-OOP-DBMS-CAPSTONE-BANKING-SYSTEM).
+Repository: [https://github.com/SmitroniX/FINCORE-OOP-DBMS-CAPSTONE-BANKING-SYSTEM](https://github.com/SmitroniX/FINCORE-OOP-DBMS-CAPSTONE-BANKING-SYSTEM).

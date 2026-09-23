@@ -55,11 +55,11 @@ public class LoginView extends StackPane {
         boolean isOracle = DatabaseManager.getInstance().isOracle();
         HBox dbBadge = new HBox(8);
         dbBadge.setAlignment(Pos.CENTER);
-        Circle statusDot = new Circle(4.5, isOracle ? Color.web("#4ade80") : Color.web("#facc15"));
-        Label dbLabel = new Label(isOracle ? "Oracle Database (Docker FREEPDB1)" : "SQLite Embedded (Zero-Config Fallback)");
-        dbLabel.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + (isOracle ? "#4ade80" : "#facc15") + ";");
+        Circle statusDot = new Circle(4.5, isOracle ? Color.web("#4ade80") : Color.web("#38bdf8"));
+        Label dbLabel = new Label(isOracle ? "Oracle Database (Docker FREEPDB1:1521)" : "Oracle Database Engine");
+        dbLabel.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + (isOracle ? "#4ade80" : "#38bdf8") + ";");
         dbBadge.getChildren().addAll(statusDot, dbLabel);
-        dbBadge.getStyleClass().add(isOracle ? "badge-db-oracle" : "badge-db-sqlite");
+        dbBadge.getStyleClass().add("badge-db-oracle");
 
         // 3. Login Input Form
         VBox form = new VBox(12);
