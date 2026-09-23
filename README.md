@@ -77,50 +77,30 @@ A comprehensive, end-to-end CRUD implementation on financial records:
 
 ---
 
-### Step 1: Start Oracle Database in Docker
-Open Windows Command Prompt in the project directory and run:
-```cmd
-start-db.bat
-```
-*(Or manually: `docker compose up -d`)*  
-This starts the `fincore-oracle-db` container on port `1521` and executes the initialization scripts (`init-scripts/01_schema.sql` and `init-scripts/02_seed.sql`).
-
----
-
-### Step 2: Launch the Application
-
-#### Option A: Launch the JavaFX 21 Desktop GUI (Recommended)
-Double-click `run-gui.bat` or run:
+### Single Command All-In-One Run (Recommended)
+You only need to run **one command**:
 ```cmd
 run.bat
 ```
-*(Alternatively: `mvn javafx:run`)*
+*(Or simply double-click `run.bat` or `run-gui.bat`)*
 
-#### Option B: Run Automated Verification & Capstone Demo
-Double-click `run-demo.bat` or run:
-```cmd
-run.bat --demo
-```
-This executes all 8 capstone verification steps in the terminal with formatted tables and real-time SQL statements.
-
-#### Option C: Run Interactive Windows CMD Console Menu
-Double-click `run-cli.bat` or run:
-```cmd
-run.bat --cli
-```
-
-#### Option D: Run Unit & Integration Tests
-```cmd
-run.bat --test
-```
-*(Executes all 14 JUnit 5 tests, ensuring 100% passing build)*
+**What `run.bat` does automatically:**
+1. Verifies **Java 21** is active.
+2. Checks **Docker Desktop**; starts the Oracle Database container (`fincore-oracle-db`) automatically if it is not already running.
+3. Automatically monitors and verifies that Oracle Database service `FREEPDB1` is **100% ready and accepting connections**.
+4. Launches the **JavaFX 21 Enterprise Finance Dashboard** directly connected to Oracle Database (port 1521).
+5. **No SQLite**: Strictly connects to Oracle Database with zero fallback.
 
 ---
 
-### Step 3: Stop Oracle Database (When Finished)
-```cmd
-stop-db.bat
-```
+### Command-line Modes:
+| Task | Windows CMD Command | Description |
+|---|---|---|
+| **Launch Desktop GUI** | `run.bat` (or `run-gui.bat`) | Boots Oracle & opens JavaFX 21 Finance Dashboard |
+| **Run Capstone Demo** | `run.bat --demo` (or `run-demo.bat`) | Runs full 8-step verification showcase in terminal |
+| **Interactive Terminal** | `run.bat --cli` (or `run-cli.bat`) | Interactive console menu in Windows CMD |
+| **Run Automated Tests** | `run.bat --test` | Executes 14/14 JUnit 5 tests |
+| **Stop Oracle Database** | `stop-db.bat` | Stops the Oracle Database Docker container |
 
 ---
 

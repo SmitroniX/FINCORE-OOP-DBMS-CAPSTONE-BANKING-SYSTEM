@@ -83,7 +83,7 @@ public class DatabaseManager {
                 }
             }
 
-            if ("true".equalsIgnoreCase(config.getProperty("oracle.fallback.sqlite", "true"))) {
+            if ("true".equalsIgnoreCase(config.getProperty("oracle.fallback.sqlite", "false"))) {
                 System.out.println("[DatabaseManager] Primary DBMS Engine: Oracle Database in Docker (" + primaryUrl + ").");
                 System.out.println("[DatabaseManager] Notice: Oracle service is not currently available on port 1521.");
                 System.out.println("[DatabaseManager] Activating automated embedded SQLite engine to maintain 100% operational availability.");
@@ -91,7 +91,7 @@ public class DatabaseManager {
                 initDrivers();
                 return getConnection();
             }
-            throw new SQLException("Cannot establish connection to Oracle Database at " + primaryUrl);
+            throw new SQLException("Cannot establish connection to Oracle Database at " + primaryUrl + " (" + user + "). Ensure Oracle container 'fincore-oracle-db' is running!");
         } else if ("mysql".equals(type)) {
             conn = DriverManager.getConnection(config.getJdbcUrl(), config.getDbUser(), config.getDbPassword());
             return conn;
@@ -157,7 +157,7 @@ public class DatabaseManager {
     }
 
     private Connection tryConnectOracle(String url, String user, String pass) {
-        int maxAttempts = 5;
+        int maxAttempts = 10;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
                 Connection conn = DriverManager.getConnection(url, user, pass);
@@ -172,8 +172,8 @@ public class DatabaseManager {
                         || (e.getMessage() != null && e.getMessage().contains("ORA-01033"));
 
                 if (isStartingUp && attempt < maxAttempts) {
-                    System.out.println("[DatabaseManager] Oracle listener is active on port 1521, but service is still initializing (attempt "
-                            + attempt + "/" + maxAttempts + ")... waiting 3s");
+                    System.out.println("[DatabaseManager] Oracle listener is active on port 1521, but service FREEPDB1 is still initializing (attempt "
+                            + attempt + "/" + maxAttempts + ")... waiting 3s for Oracle to finish opening");
                     try {
                         Thread.sleep(3000);
                     } catch (InterruptedException ie) {
@@ -181,6 +181,9 @@ public class DatabaseManager {
                         break;
                     }
                 } else {
+                    if (attempt == 1 && !isStartingUp) {
+                        System.err.println("[DatabaseManager] Oracle connection notice: " + e.getMessage());
+                    }
                     break;
                 }
             }

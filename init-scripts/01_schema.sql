@@ -3,6 +3,18 @@
 -- Production PL/SQL Packages, Triggers, Views, Sequences & Constraints
 -- ====================================================================
 
+-- Ensure fincore_user has all needed permissions and is the current schema
+BEGIN
+    EXECUTE IMMEDIATE 'GRANT CONNECT, RESOURCE, DBA TO fincore_user';
+    EXECUTE IMMEDIATE 'GRANT CREATE SESSION, CREATE TABLE, CREATE VIEW, CREATE PROCEDURE, CREATE SEQUENCE, CREATE TRIGGER TO fincore_user';
+    EXECUTE IMMEDIATE 'ALTER USER fincore_user QUOTA UNLIMITED ON USERS';
+EXCEPTION
+    WHEN OTHERS THEN NULL;
+END;
+/
+
+ALTER SESSION SET CURRENT_SCHEMA = fincore_user;
+
 -- 1. Users Authentication Table
 CREATE TABLE users (
     id NUMBER(10) PRIMARY KEY,

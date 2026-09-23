@@ -2,6 +2,8 @@
 -- FinCore Initial Seed Data (Oracle Database Free / XE / 23c / 21c)
 -- ====================================================================
 
+ALTER SESSION SET CURRENT_SCHEMA = fincore_user;
+
 -- 1. Insert Authentication Users (admin, manager, user)
 INSERT INTO users (id, username, password, full_name, role, status)
 VALUES (seq_users.NEXTVAL, 'admin', 'admin123', 'System Administrator', 'ADMIN', 'ACTIVE');

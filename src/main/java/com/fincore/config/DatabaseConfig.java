@@ -35,7 +35,7 @@ public class DatabaseConfig {
                 properties.setProperty("oracle.url", "jdbc:oracle:thin:@localhost:1521:xe");
                 properties.setProperty("oracle.user", "system");
                 properties.setProperty("oracle.password", "oracle");
-                properties.setProperty("oracle.fallback.sqlite", "true");
+                properties.setProperty("oracle.fallback.sqlite", "false");
             }
         } catch (IOException e) {
             System.err.println("[DatabaseConfig] Failed to load db.properties: " + e.getMessage());
@@ -109,7 +109,7 @@ public class DatabaseConfig {
     public String getSchemaFile() {
         String type = getDbType();
         if ("oracle".equals(type)) {
-            return "schema-oracle10g.sql";
+            return "schema-oracle.sql";
         } else if ("mysql".equals(type)) {
             return "schema-mysql.sql";
         }
@@ -119,7 +119,7 @@ public class DatabaseConfig {
     public String getSeedFile() {
         String type = getDbType();
         if ("oracle".equals(type)) {
-            return "seed-oracle10g.sql";
+            return "seed-oracle.sql";
         }
         return "seed.sql";
     }
