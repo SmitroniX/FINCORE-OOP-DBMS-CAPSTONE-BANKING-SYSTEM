@@ -118,12 +118,17 @@ public class DatabaseManager {
         }
     }
 
+    private boolean initialized = false;
+
     /**
      * Initializes the database schema and default seed data.
      */
-    public void initializeDatabase() {
+    public synchronized void initializeDatabase() {
+        if (initialized) {
+            return;
+        }
         try {
-            // Probe connection to trigger driver load and fallback if Oracle is offline
+            // Probe connection to trigger driver load and verify readiness
             try (Connection testConn = getConnection()) {
                 // Connection successfully verified
             }
@@ -133,6 +138,7 @@ public class DatabaseManager {
 
         MigrationRunner runner = new MigrationRunner(this);
         runner.runMigrations();
+        initialized = true;
     }
 
     public DatabaseConfig getConfig() {

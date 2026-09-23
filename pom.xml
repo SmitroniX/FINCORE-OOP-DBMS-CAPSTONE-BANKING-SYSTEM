@@ -97,6 +97,7 @@
     </dependencies>
 
     <build>
+        <defaultGoal>javafx:run</defaultGoal>
         <plugins>
             <!-- Maven Compiler Plugin configured for Java 21 -->
             <plugin>
