@@ -14,9 +14,23 @@ fi
 echo "[*] Starting Oracle Database Free container..."
 docker compose up -d
 
-echo "[*] Container status:"
-docker compose ps
+echo ""
+echo "[*] Waiting for Oracle Database service FREEPDB1 to complete registration..."
+echo "    (Oracle typically takes 30-60 seconds on initial boot)"
 
+ATTEMPTS=0
+while [ $ATTEMPTS -lt 35 ]; do
+    if docker logs fincore-oracle-db 2>&1 | grep -q "DATABASE IS READY TO USE!"; then
+        echo ""
+        echo "[SUCCESS] Oracle Database is 100% READY and OPEN!"
+        break
+    fi
+    printf "."
+    sleep 3
+    ATTEMPTS=$((ATTEMPTS+1))
+done
+
+echo ""
 echo "======================================================================"
 echo " Oracle Database Container is running!"
 echo " Host:     localhost:1521"

@@ -58,26 +58,40 @@ public class DatabaseManager {
         Connection conn;
         String type = config.getDbType();
         if ("oracle".equals(type)) {
-            try {
-                conn = DriverManager.getConnection(config.getJdbcUrl(), config.getDbUser(), config.getDbPassword());
+            String primaryUrl = config.getJdbcUrl();
+            String user = config.getDbUser();
+            String pass = config.getDbPassword();
+
+            conn = tryConnectOracle(primaryUrl, user, pass);
+            if (conn != null) {
                 return conn;
-            } catch (SQLException e1) {
-                // Attempt classic Oracle XE port 1521
+            }
+
+            // Attempt secondary/alternative Oracle URLs (e.g. CDB service /FREE or classic :xe)
+            String[] altUrls = new String[] {
+                "jdbc:oracle:thin:@localhost:1521/FREE",
+                "jdbc:oracle:thin:@localhost:1521:FREE",
+                "jdbc:oracle:thin:@localhost:1521/XEPDB1",
+                config.getOracleAltUrl()
+            };
+            for (String altUrl : altUrls) {
                 try {
-                    conn = DriverManager.getConnection(config.getOracleAltUrl(), config.getOracleAltUser(), config.getOracleAltPassword());
+                    conn = DriverManager.getConnection(altUrl, user, pass);
+                    System.out.println("[DatabaseManager] Connected to Oracle Database via target: " + altUrl);
                     return conn;
-                } catch (SQLException e2) {
-                    if ("true".equalsIgnoreCase(config.getProperty("oracle.fallback.sqlite", "true"))) {
-                        System.out.println("[DatabaseManager] Primary DBMS Engine: Oracle Database in Docker (" + config.getJdbcUrl() + ").");
-                        System.out.println("[DatabaseManager] Notice: Oracle container port 1521 not currently ready (" + e1.getMessage() + ").");
-                        System.out.println("[DatabaseManager] Activating automated embedded SQLite engine to maintain 100% operational availability.");
-                        config.setDbType("sqlite");
-                        initDrivers();
-                        return getConnection();
-                    }
-                    throw e1;
+                } catch (SQLException ignored) {
                 }
             }
+
+            if ("true".equalsIgnoreCase(config.getProperty("oracle.fallback.sqlite", "true"))) {
+                System.out.println("[DatabaseManager] Primary DBMS Engine: Oracle Database in Docker (" + primaryUrl + ").");
+                System.out.println("[DatabaseManager] Notice: Oracle service is not currently available on port 1521.");
+                System.out.println("[DatabaseManager] Activating automated embedded SQLite engine to maintain 100% operational availability.");
+                config.setDbType("sqlite");
+                initDrivers();
+                return getConnection();
+            }
+            throw new SQLException("Cannot establish connection to Oracle Database at " + primaryUrl);
         } else if ("mysql".equals(type)) {
             conn = DriverManager.getConnection(config.getJdbcUrl(), config.getDbUser(), config.getDbPassword());
             return conn;
@@ -140,5 +154,37 @@ public class DatabaseManager {
             } catch (Exception ignored) {
             }
         }
+    }
+
+    private Connection tryConnectOracle(String url, String user, String pass) {
+        int maxAttempts = 5;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                Connection conn = DriverManager.getConnection(url, user, pass);
+                if (attempt > 1) {
+                    System.out.println("[DatabaseManager] Successfully established connection to Oracle Database (" + url + ") on attempt #" + attempt + "!");
+                }
+                return conn;
+            } catch (SQLException e) {
+                boolean isStartingUp = e.getErrorCode() == 12514
+                        || (e.getMessage() != null && e.getMessage().contains("ORA-12514"))
+                        || (e.getMessage() != null && e.getMessage().contains("ORA-12505"))
+                        || (e.getMessage() != null && e.getMessage().contains("ORA-01033"));
+
+                if (isStartingUp && attempt < maxAttempts) {
+                    System.out.println("[DatabaseManager] Oracle listener is active on port 1521, but service is still initializing (attempt "
+                            + attempt + "/" + maxAttempts + ")... waiting 3s");
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+        }
+        return null;
     }
 }

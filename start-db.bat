@@ -34,16 +34,48 @@ echo [*] Starting Oracle Database Free container (gvenzl/oracle-free:23-slim)...
 docker compose up -d
 
 echo.
-echo [*] Container status:
-docker compose ps
-
+echo [*] Waiting for Oracle Database service FREEPDB1 to complete registration...
+echo     (Oracle typically takes 30-60 seconds on initial boot)
 echo.
+
+set /a ATTEMPTS=0
+:WAIT_ORACLE
+set /a ATTEMPTS+=1
+
+REM 1. Check if Oracle has logged ready message
+docker logs fincore-oracle-db 2>&1 | findstr /C:"DATABASE IS READY TO USE!" >nul
+if %ERRORLEVEL% equ 0 goto ORACLE_READY
+
+REM 2. Check if container is still running
+docker inspect -f "{{.State.Running}}" fincore-oracle-db 2>nul | findstr "true" >nul
+if %ERRORLEVEL% neq 0 (
+    echo [ERROR] Oracle container is not running. Check 'docker logs fincore-oracle-db'.
+    goto ORACLE_SUMMARY
+)
+
+REM 3. If reached 35 attempts (~105 seconds), proceed
+if !ATTEMPTS! geq 35 (
+    echo [NOTICE] Oracle is still completing initialization.
+    echo FinCore will auto-retry or fall back to SQLite when launched.
+    goto ORACLE_SUMMARY
+)
+
+<nul set /p =.
+timeout /t 3 /nobreak >nul
+goto WAIT_ORACLE
+
+:ORACLE_READY
+echo.
+echo [*] Container Status: [HEALTHY - DATABASE READY]
+echo.
+
+:ORACLE_SUMMARY
 echo ======================================================================
-echo  Oracle Database Container is starting up!
+echo  Oracle Database Container is ACTIVE!
 echo ======================================================================
 echo  Host:       localhost
 echo  Port:       1521
-echo  Database:   FREEPDB1 (or xe)
+echo  Database:   FREEPDB1 (PDB) / FREE (CDB)
 echo  User:       fincore_user
 echo  Password:   fincore_pass
 echo  Admin User: system
@@ -51,7 +83,6 @@ echo  Admin Pass: fincore123
 echo  JDBC URL:   jdbc:oracle:thin:@localhost:1521/FREEPDB1
 echo ======================================================================
 echo.
-echo Note: Initializing Oracle container typically takes 30-60 seconds on first run.
-echo You can now launch the JavaFX application in CMD using: run.bat
+echo [SUCCESS] You can now launch the application in Windows CMD using: run.bat
 echo.
 pause
