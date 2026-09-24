@@ -149,7 +149,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.fincore.MainApp</mainClass>
+                            <mainClass>com.fincore.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

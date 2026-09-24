@@ -80,11 +80,11 @@ public class Main {
         boolean forceGui = false;
 
         for (String arg : args) {
-            if ("--demo".equalsIgnoreCase(arg) || "-d".equalsIgnoreCase(arg) || "--test".equalsIgnoreCase(arg)) {
+            if ("--demo".equalsIgnoreCase(arg) || "-d".equalsIgnoreCase(arg) || "--test".equalsIgnoreCase(arg) || "demo".equalsIgnoreCase(arg) || "test".equalsIgnoreCase(arg) || "-t".equalsIgnoreCase(arg)) {
                 runDemoOnly = true;
-            } else if ("--cli".equalsIgnoreCase(arg) || "-c".equalsIgnoreCase(arg) || "--console".equalsIgnoreCase(arg)) {
+            } else if ("--cli".equalsIgnoreCase(arg) || "-c".equalsIgnoreCase(arg) || "--console".equalsIgnoreCase(arg) || "cli".equalsIgnoreCase(arg) || "console".equalsIgnoreCase(arg)) {
                 runCliOnly = true;
-            } else if ("--gui".equalsIgnoreCase(arg) || "-g".equalsIgnoreCase(arg)) {
+            } else if ("--gui".equalsIgnoreCase(arg) || "-g".equalsIgnoreCase(arg) || "gui".equalsIgnoreCase(arg)) {
                 forceGui = true;
             }
         }

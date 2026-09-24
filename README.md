@@ -117,13 +117,43 @@ run.bat
 3. Monitors the container and waits until Oracle finishes initializing `FREEPDB1` and prints `DATABASE IS READY TO USE!`.
 4. Launches the JavaFX 21 GUI directly connected to Oracle Database on port 1521.
 5. **No SQLite**: Strictly connected to Oracle Database with zero fallback.
-
 ### Other `run.bat` Modes:
 ```cmd
-run.bat --demo       :: Run automated 8-step demonstration in CMD (or run-demo.bat)
-run.bat --cli        :: Interactive text-based console menu (or run-cli.bat)
-run.bat --test       :: Run all 14 JUnit 5 tests
+run.bat demo         :: Run automated 8-step demonstration in CMD (or run-demo.bat)
+run.bat cli          :: Interactive text-based console menu (or run-cli.bat)
+run.bat test         :: Run all 14 JUnit 5 tests
+run.bat setup        :: Auto-install Java 21, Maven, Docker, and Oracle DB
+run.bat build        :: Compile and package fat JAR
+run.bat help         :: View CLI help and usage
 ```
+
+---
+
+## 💻 Eclipse IDE Version & Zero-Config Setup
+
+FinCore includes native, pre-packaged support for **Eclipse IDE for Java Developers** (2023-09, 2023-12, 2024-03, 2024-06 or newer) with pre-configured project metadata (`.project`, `.classpath`, `.settings/`) and **5 ready-to-run Eclipse Launch Configurations**!
+
+### 📥 How to Import into Eclipse in 1 Minute:
+
+1. Open **Eclipse IDE**.
+2. Go to **File** ➔ **Import...** ➔ **Maven** ➔ **Existing Maven Projects** ➔ Click **Next >**.
+   *(Alternatively: **File** ➔ **Import...** ➔ **General** ➔ **Existing Projects into Workspace**)*.
+3. Browse and select the `oop-dbms-capstone` folder.
+4. Click **Finish**. Eclipse will automatically recognize Java 21, JavaFX 21, and Maven dependencies.
+
+### ⚡ Pre-Configured Eclipse Run Configurations:
+
+No manual VM argument or classpath configuration is required. Simply right-click any `.launch` file in the Eclipse Package Explorer ➔ **Run As**:
+
+| Eclipse Launch File | Target Component | Description |
+|---|---|---|
+| **`FinCore-GUI.launch`** | JavaFX 21 GUI | Launches the dark-themed Enterprise Finance Dashboard |
+| **`FinCore-Demo.launch`** | Automated Demo | Runs the full 8-step Capstone Demonstration in Eclipse Console |
+| **`FinCore-CLI.launch`** | Interactive CLI | Launches the interactive text console inside Eclipse Console |
+| **`FinCore-Tests.launch`** | JUnit 5 Test Suite | Runs all 14 unit & integration tests in Eclipse JUnit Runner |
+| **`FinCore-Maven-JavaFX.launch`** | Maven Runner | Runs `javafx:run` directly inside Eclipse m2e |
+
+*(For comprehensive step-by-step guidance and troubleshooting, see the [Eclipse IDE Setup Guide](docs/ECLIPSE_SETUP.md)).*
 
 ---
 
