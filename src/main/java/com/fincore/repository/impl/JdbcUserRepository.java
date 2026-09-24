@@ -88,7 +88,19 @@ public class JdbcUserRepository implements UserRepository {
             int rows = ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    user.setId(rs.getLong(1));
+                    try {
+                        user.setId(rs.getLong(1));
+                    } catch (Exception ex) {
+                        if (dbManager.isOracle()) {
+                            try (Statement s2 = conn.createStatement();
+                                 ResultSet rs2 = s2.executeQuery("SELECT seq_users.CURRVAL FROM dual")) {
+                                if (rs2.next()) {
+                                    user.setId(rs2.getLong(1));
+                                }
+                            } catch (Exception ignored) {
+                            }
+                        }
+                    }
                 }
             }
             long duration = System.currentTimeMillis() - start;

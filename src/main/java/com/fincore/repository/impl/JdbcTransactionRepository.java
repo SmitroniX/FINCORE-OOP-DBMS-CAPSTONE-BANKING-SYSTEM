@@ -48,7 +48,19 @@ public class JdbcTransactionRepository implements TransactionRepository {
 
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    tx.setId(rs.getLong(1));
+                    try {
+                        tx.setId(rs.getLong(1));
+                    } catch (Exception ex) {
+                        if (dbManager.isOracle()) {
+                            try (Statement s2 = conn.createStatement();
+                                 ResultSet rs2 = s2.executeQuery("SELECT seq_transactions.CURRVAL FROM dual")) {
+                                if (rs2.next()) {
+                                    tx.setId(rs2.getLong(1));
+                                }
+                            } catch (Exception ignored) {
+                            }
+                        }
+                    }
                 }
             }
             return tx;
@@ -118,8 +130,9 @@ public class JdbcTransactionRepository implements TransactionRepository {
     @Override
     public List<Transaction> findRecentTransactions(int limit) {
         List<Transaction> list = new ArrayList<>();
-        String sql = "SELECT id, transaction_id, account_number, type, amount, balance_after, target_account, description, created_at " +
-                     "FROM transactions ORDER BY created_at DESC, id DESC LIMIT ?";
+        String sql = dbManager.isOracle()
+                ? "SELECT * FROM (SELECT id, transaction_id, account_number, type, amount, balance_after, target_account, description, created_at FROM transactions ORDER BY created_at DESC, id DESC) WHERE ROWNUM <= ?"
+                : "SELECT id, transaction_id, account_number, type, amount, balance_after, target_account, description, created_at FROM transactions ORDER BY created_at DESC, id DESC LIMIT ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 

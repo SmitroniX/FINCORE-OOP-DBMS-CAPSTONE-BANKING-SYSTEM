@@ -22,10 +22,8 @@ import com.fincore.service.FinanceService;
 import com.fincore.service.ReportService;
 import com.fincore.ui.ConsoleMenu;
 import com.fincore.ui.DemoRunner;
-import com.fincore.ui.swing.LoginFrame;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.GraphicsEnvironment;
 
 import static com.fincore.ui.ConsoleColors.*;
 

@@ -110,8 +110,6 @@ public class DatabaseConfig {
         String type = getDbType();
         if ("oracle".equals(type)) {
             return "schema-oracle.sql";
-        } else if ("mysql".equals(type)) {
-            return "schema-mysql.sql";
         }
         return "schema-sqlite.sql";
     }

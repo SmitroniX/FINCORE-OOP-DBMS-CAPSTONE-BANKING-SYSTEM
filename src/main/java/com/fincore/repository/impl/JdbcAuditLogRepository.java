@@ -72,7 +72,9 @@ public class JdbcAuditLogRepository implements AuditLogRepository {
     @Override
     public List<AuditLog> findRecentLogs(int limit) {
         List<AuditLog> logs = new ArrayList<>();
-        String sql = "SELECT id, action, entity_type, entity_id, performed_by, details, timestamp FROM audit_logs ORDER BY timestamp DESC, id DESC LIMIT ?";
+        String sql = dbManager.isOracle()
+                ? "SELECT * FROM (SELECT id, action, entity_type, entity_id, performed_by, details, timestamp FROM audit_logs ORDER BY timestamp DESC, id DESC) WHERE ROWNUM <= ?"
+                : "SELECT id, action, entity_type, entity_id, performed_by, details, timestamp FROM audit_logs ORDER BY timestamp DESC, id DESC LIMIT ?";
         try (Connection conn = dbManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 

@@ -40,7 +40,19 @@ public class JdbcCustomerRepository implements CustomerRepository {
 
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    customer.setId(rs.getLong(1));
+                    try {
+                        customer.setId(rs.getLong(1));
+                    } catch (Exception ex) {
+                        if (dbManager.isOracle()) {
+                            try (Statement s2 = conn.createStatement();
+                                 ResultSet rs2 = s2.executeQuery("SELECT seq_customers.CURRVAL FROM dual")) {
+                                if (rs2.next()) {
+                                    customer.setId(rs2.getLong(1));
+                                }
+                            } catch (Exception ignored) {
+                            }
+                        }
+                    }
                 }
             }
             return customer;

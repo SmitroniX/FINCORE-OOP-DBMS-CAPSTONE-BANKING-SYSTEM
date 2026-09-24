@@ -39,12 +39,28 @@ public class JdbcFinancialRecordRepository implements FinancialRecordRepository 
             ps.setDouble(3, record.getAmount());
             ps.setString(4, record.getAccountNumber());
             ps.setString(5, record.getDescription());
-            ps.setString(6, record.getRecordDate().toString());
+            if (record.getRecordDate() != null) {
+                ps.setDate(6, java.sql.Date.valueOf(record.getRecordDate()));
+            } else {
+                ps.setDate(6, java.sql.Date.valueOf(LocalDate.now()));
+            }
 
             int rows = ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    record.setId(rs.getLong(1));
+                    try {
+                        record.setId(rs.getLong(1));
+                    } catch (Exception ex) {
+                        if (dbManager.isOracle()) {
+                            try (Statement s2 = conn.createStatement();
+                                 ResultSet rs2 = s2.executeQuery("SELECT seq_fin_records.CURRVAL FROM dual")) {
+                                if (rs2.next()) {
+                                    record.setId(rs2.getLong(1));
+                                }
+                            } catch (Exception ignored) {
+                            }
+                        }
+                    }
                 }
             }
             long duration = System.currentTimeMillis() - start;
@@ -160,7 +176,11 @@ public class JdbcFinancialRecordRepository implements FinancialRecordRepository 
             ps.setDouble(3, record.getAmount());
             ps.setString(4, record.getAccountNumber());
             ps.setString(5, record.getDescription());
-            ps.setString(6, record.getRecordDate().toString());
+            if (record.getRecordDate() != null) {
+                ps.setDate(6, java.sql.Date.valueOf(record.getRecordDate()));
+            } else {
+                ps.setDate(6, java.sql.Date.valueOf(LocalDate.now()));
+            }
             ps.setLong(7, record.getId());
 
             int rows = ps.executeUpdate();
@@ -247,13 +267,18 @@ public class JdbcFinancialRecordRepository implements FinancialRecordRepository 
         double amount = rs.getDouble("amount");
         String accountNumber = rs.getString("account_number");
         String description = rs.getString("description");
-        String dateStr = rs.getString("record_date");
         LocalDate date = LocalDate.now();
-        if (dateStr != null && !dateStr.isEmpty()) {
-            try {
-                date = LocalDate.parse(dateStr.substring(0, 10));
-            } catch (Exception ignored) {
+        try {
+            java.sql.Date d = rs.getDate("record_date");
+            if (d != null) {
+                date = d.toLocalDate();
+            } else {
+                String dateStr = rs.getString("record_date");
+                if (dateStr != null && !dateStr.isEmpty()) {
+                    date = LocalDate.parse(dateStr.substring(0, 10));
+                }
             }
+        } catch (Exception ignored) {
         }
         Timestamp ts = rs.getTimestamp("created_at");
         LocalDateTime created = ts != null ? ts.toLocalDateTime() : LocalDateTime.now();

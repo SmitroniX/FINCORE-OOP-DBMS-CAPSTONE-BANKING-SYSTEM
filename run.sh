@@ -12,6 +12,16 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+if [ "$1" == "--help" ] || [ "$1" == "help" ] || [ "$1" == "-h" ]; then
+    echo "Usage: ./run.sh [demo|cli|test|setup|build|help]"
+    echo "  ./run.sh         - Launch JavaFX 21 GUI"
+    echo "  ./run.sh demo    - Run Automated 8-Step Capstone Demo in terminal"
+    echo "  ./run.sh cli     - Launch Interactive Console Terminal"
+    echo "  ./run.sh test    - Run 14/14 JUnit 5 tests"
+    echo "  ./run.sh setup   - Run automated environment setup"
+    exit 0
+fi
+
 # 0. Check Java & Maven prerequisites
 if ! command -v java &> /dev/null || ! command -v mvn &> /dev/null; then
     echo "[!] Java 21 or Apache Maven is not detected."
@@ -47,29 +57,36 @@ if command -v docker &> /dev/null; then
     fi
 fi
 
-if [ "$1" == "--test" ] || [ "$1" == "-t" ]; then
+if [ "$1" == "--test" ] || [ "$1" == "test" ] || [ "$1" == "-t" ]; then
     echo "[*] Running Maven Test Suite..."
     mvn test
     exit 0
 fi
 
-if [ "$1" == "--demo" ] || [ "$1" == "-d" ]; then
+if [ "$1" == "--demo" ] || [ "$1" == "demo" ] || [ "$1" == "-d" ]; then
     echo "[*] Running Automated Capstone Demonstration..."
     mvn exec:java -Dexec.args="--demo"
     exit 0
 fi
 
-if [ "$1" == "--cli" ] || [ "$1" == "-c" ]; then
+if [ "$1" == "--cli" ] || [ "$1" == "cli" ] || [ "$1" == "-c" ]; then
     echo "[*] Starting Interactive Console Menu..."
     mvn exec:java -Dexec.args="--cli"
     exit 0
 fi
 
-if [ "$1" == "--build" ] || [ "$1" == "-b" ]; then
+if [ "$1" == "--setup" ] || [ "$1" == "setup" ]; then
+    echo "[*] Running Automated Prerequisites Installer..."
+    bash "$SCRIPT_DIR/setup.sh"
+    exit 0
+fi
+
+if [ "$1" == "--build" ] || [ "$1" == "build" ] || [ "$1" == "-b" ]; then
     echo "[*] Building executable JAR package..."
     mvn clean package -DskipTests
     exit 0
 fi
+
 
 # Default: Launch JavaFX 21 GUI
 echo "[*] Launching FinCore JavaFX 21 Dashboard..."

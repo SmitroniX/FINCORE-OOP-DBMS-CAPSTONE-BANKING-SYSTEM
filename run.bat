@@ -16,6 +16,11 @@ echo.
 set "SCRIPT_DIR=%~dp0"
 cd /d "%SCRIPT_DIR%"
 
+if /i "%~1"=="help" goto RUN_HELP
+if /i "%~1"=="--help" goto RUN_HELP
+if /i "%~1"=="-h" goto RUN_HELP
+if /i "%~1"=="/?" goto RUN_HELP
+
 REM 1. Verify Java 21+ is installed and reachable in PATH
 where java >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
@@ -129,14 +134,27 @@ echo [SUCCESS] Oracle Database is CONNECTED and READY on port 1521 (Service: FRE
 echo.
 
 REM 6. Handle Command-line Arguments
-if "%~1"=="--test" goto RUN_TEST
-if "%~1"=="-t" goto RUN_TEST
-if "%~1"=="--demo" goto RUN_DEMO
-if "%~1"=="-d" goto RUN_DEMO
-if "%~1"=="--cli" goto RUN_CLI
-if "%~1"=="-c" goto RUN_CLI
-if "%~1"=="--build" goto RUN_BUILD
-if "%~1"=="-b" goto RUN_BUILD
+if /i "%~1"=="--test" goto RUN_TEST
+if /i "%~1"=="test" goto RUN_TEST
+if /i "%~1"=="-t" goto RUN_TEST
+if /i "%~1"=="--demo" goto RUN_DEMO
+if /i "%~1"=="demo" goto RUN_DEMO
+if /i "%~1"=="-d" goto RUN_DEMO
+if /i "%~1"=="--cli" goto RUN_CLI
+if /i "%~1"=="cli" goto RUN_CLI
+if /i "%~1"=="-c" goto RUN_CLI
+if /i "%~1"=="--gui" goto RUN_GUI
+if /i "%~1"=="gui" goto RUN_GUI
+if /i "%~1"=="-g" goto RUN_GUI
+if /i "%~1"=="--setup" goto RUN_SETUP
+if /i "%~1"=="setup" goto RUN_SETUP
+if /i "%~1"=="--build" goto RUN_BUILD
+if /i "%~1"=="build" goto RUN_BUILD
+if /i "%~1"=="-b" goto RUN_BUILD
+if /i "%~1"=="help" goto RUN_HELP
+if /i "%~1"=="--help" goto RUN_HELP
+if /i "%~1"=="-h" goto RUN_HELP
+if /i "%~1"=="/?" goto RUN_HELP
 
 REM Default: Launch JavaFX 21 Desktop GUI via Maven
 :RUN_GUI
@@ -176,9 +194,28 @@ echo [*] Running Automated JUnit 5 Unit & Integration Tests...
 call mvn test
 goto END
 
-:RUN_BUILD
-echo [*] Packaging Full Executable JAR with Dependencies...
-call mvn clean package -DskipTests
+:RUN_SETUP
+echo [*] Launching Automated Prerequisites Installer...
+if exist "%SCRIPT_DIR%setup.bat" (
+    call "%SCRIPT_DIR%setup.bat"
+) else (
+    echo [ERROR] setup.bat not found in %SCRIPT_DIR%
+)
+goto END
+
+:RUN_HELP
+echo.
+echo ====================================================================
+echo   FinCore: Windows Command-Line Launcher Reference
+echo ====================================================================
+echo   run.bat              - Launch JavaFX 21 Finance Dashboard (GUI)
+echo   run.bat demo         - Run Automated 8-Step Capstone Demo in CMD
+echo   run.bat cli          - Launch Interactive Terminal Console Menu in CMD
+echo   run.bat test         - Run 14/14 Automated JUnit 5 Unit ^& Integration Tests
+echo   run.bat setup        - Auto-Install Java 21, Maven, Docker, and Oracle DB
+echo   run.bat build        - Compile and package Fat Executable JAR
+echo   run.bat help         - Display this reference manual
+echo ====================================================================
 goto END
 
 :END

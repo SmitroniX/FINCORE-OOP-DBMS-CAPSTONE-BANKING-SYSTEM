@@ -35,7 +35,19 @@ public class JdbcBudgetRepository implements BudgetRepository {
             int rows = ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    budget.setId(rs.getLong(1));
+                    try {
+                        budget.setId(rs.getLong(1));
+                    } catch (Exception ex) {
+                        if (dbManager.isOracle()) {
+                            try (Statement s2 = conn.createStatement();
+                                 ResultSet rs2 = s2.executeQuery("SELECT seq_budgets.CURRVAL FROM dual")) {
+                                if (rs2.next()) {
+                                    budget.setId(rs2.getLong(1));
+                                }
+                            } catch (Exception ignored) {
+                            }
+                        }
+                    }
                 }
             }
             long duration = System.currentTimeMillis() - start;

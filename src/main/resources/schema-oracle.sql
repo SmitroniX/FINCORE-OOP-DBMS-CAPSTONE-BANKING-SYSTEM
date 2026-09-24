@@ -182,16 +182,14 @@ END;
 
 -- Trigger B: Real-time budget warning trigger on financial expense
 CREATE OR REPLACE TRIGGER trg_check_budget_alert
-AFTER INSERT ON financial_records
+BEFORE INSERT ON financial_records
 FOR EACH ROW
 WHEN (NEW.record_type = 'EXPENSE')
 DECLARE
     v_limit NUMBER(15, 2);
-    v_total_spent NUMBER(15, 2);
 BEGIN
     SELECT monthly_limit INTO v_limit FROM budgets WHERE category = :NEW.category AND ROWNUM = 1;
-    SELECT NVL(SUM(amount), 0) INTO v_total_spent FROM financial_records WHERE category = :NEW.category AND record_type = 'EXPENSE';
-    IF v_total_spent > v_limit THEN
+    IF :NEW.amount > v_limit THEN
         INSERT INTO audit_logs (id, action, entity_type, entity_id, performed_by, details, timestamp)
         VALUES (
             seq_audit_logs.NEXTVAL,
@@ -199,7 +197,7 @@ BEGIN
             'BUDGET',
             :NEW.category,
             'SYSTEM',
-            'Category ' || :NEW.category || ' exceeded monthly limit of $' || TO_CHAR(v_limit, '999990.99') || '. Current total spent: $' || TO_CHAR(v_total_spent, '999990.99'),
+            'Expense amount of $' || TO_CHAR(:NEW.amount, '999990.99') || ' exceeds category limit of $' || TO_CHAR(v_limit, '999990.99'),
             SYSTIMESTAMP
         );
     END IF;
