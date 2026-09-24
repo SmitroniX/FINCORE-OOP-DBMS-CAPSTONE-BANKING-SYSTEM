@@ -247,6 +247,9 @@
 ### 1. How do you run the application during the evaluation?
 
 ```cmd
+:: Method 0: Automated Prerequisites Installer (Zero-Setup First Run)
+setup.bat             :: Auto-installs Java 21, JavaFX 21, Maven, Docker Desktop, and Oracle 23c
+
 :: Method A: Pure Maven Execution (Standard & Cross-Platform)
 mvn javafx:run        :: 1. Launch JavaFX 21 GUI directly connected to Oracle DB (or simply 'mvn')
 mvn exec:java -Dexec.args="--demo" :: 2. Run automated 8-step Capstone Demo in terminal
@@ -254,17 +257,21 @@ mvn exec:java -Dexec.args="--cli"  :: 3. Run interactive console menu in CMD
 mvn test              :: 4. Run JUnit 5 test suite (14/14 tests passing)
 
 :: Method B: Windows CMD 1-Click All-In-One Launcher
-run.bat               :: Auto-starts Docker, waits for Oracle FREEPDB1, launches GUI
+run.bat               :: Auto-checks/installs dependencies, starts Docker, waits for Oracle, launches GUI
 run.bat --demo        :: Runs automated demonstration
 run.bat --cli         :: Runs interactive terminal menu
 run.bat --test        :: Runs test suite
 
 # On Linux / macOS:
+./setup.sh            # Auto-installs Java 21, Maven, Docker, and project dependencies
 ./run.sh --gui        # Launch JavaFX GUI (auto-starts Docker & Oracle)
 ./run.sh --demo       # Run automated verification showcase
 ```
 
 ### 2. High-Frequency Technical Questions & Answers:
+
+**Q0: What if the evaluator machine doesn't have Java 21, Maven, or Docker installed?**  
+> *Answer:* We built a zero-configuration automated installer script `setup.bat` (and `setup.ps1` for PowerShell / `setup.sh` for Unix). It automatically detects missing dependencies, installs Java 21 LTS (Adoptium Temurin 21 or Liberica Full), installs Apache Maven 3.9+, configures Docker Desktop, caches JavaFX 21 runtime components, and pulls the Oracle Database 23c container. Furthermore, `run.bat` self-heals by offering to auto-install missing prerequisites on first launch.
 
 **Q1: How does your application connect to Oracle Database running in Docker?**  
 > *Answer:* We run the official `gvenzl/oracle-free:23-slim` image in Docker, exposing port `1521`. In `db.properties`, we connect via the thin JDBC URL `jdbc:oracle:thin:@localhost:1521/FREEPDB1` using Oracle's official `ojdbc11` driver (version `23.26.3.0.0`). The system is strictly configured for Oracle Database (`oracle.fallback.sqlite=false`), and `DatabaseManager` includes a smart retry mechanism that waits for the Oracle Pluggable Database `FREEPDB1` to complete service registration upon startup.

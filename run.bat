@@ -13,40 +13,79 @@ echo   Stack: Java 21 ^| JavaFX 21 ^| Oracle Database in Docker ^| PL/SQL
 echo ====================================================================
 echo.
 
-REM 1. Verify Java 21+ is installed and reachable in PATH
-where java >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    echo [ERROR] Java runtime is not detected in your Windows PATH.
-    echo Please install Java 21 from https://adoptium.net/ or Oracle JDK 21.
-    echo Ensure JAVA_HOME and PATH are configured.
-    echo.
-    pause
-    exit /b 1
-)
-
-REM 2. Determine project root
 set "SCRIPT_DIR=%~dp0"
 cd /d "%SCRIPT_DIR%"
 
-REM 3. Verify Docker is installed and running
+REM 1. Verify Java 21+ is installed and reachable in PATH
+where java >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo [!] Java runtime is not detected in your Windows PATH.
+    if exist "%SCRIPT_DIR%setup.bat" (
+        echo [*] FinCore requires Java 21. Automated setup script is available.
+        choice /C YN /M "[?] Would you like to automatically install Java 21, Maven, and all setups now"
+        if !ERRORLEVEL! EQU 1 (
+            call "%SCRIPT_DIR%setup.bat" --auto
+        ) else (
+            echo Please install Java 21 from https://adoptium.net/ and run again.
+            pause
+            exit /b 1
+        )
+    ) else (
+        echo [ERROR] Java runtime is not detected in your Windows PATH.
+        echo Please install Java 21 from https://adoptium.net/ or Oracle JDK 21.
+        pause
+        exit /b 1
+    )
+)
+
+REM 2. Verify Docker is installed and running
 where docker >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
-    echo [ERROR] Docker is not found in your Windows PATH.
-    echo FinCore is strictly configured for Oracle Database in Docker.
-    echo Please install Docker Desktop: https://www.docker.com/products/docker-desktop/
-    echo.
-    pause
-    exit /b 1
+    echo [!] Docker is not found in your Windows PATH.
+    if exist "%SCRIPT_DIR%setup.bat" (
+        echo [*] FinCore requires Docker Desktop for Oracle Database.
+        choice /C YN /M "[?] Would you like to automatically install Docker Desktop via setup.bat"
+        if !ERRORLEVEL! EQU 1 (
+            call "%SCRIPT_DIR%setup.bat" --auto
+        ) else (
+            echo Please install Docker Desktop: https://www.docker.com/products/docker-desktop/
+            pause
+            exit /b 1
+        )
+    ) else (
+        echo [ERROR] Docker is not found in your Windows PATH.
+        echo Please install Docker Desktop: https://www.docker.com/products/docker-desktop/
+        pause
+        exit /b 1
+    )
 )
 
 docker info >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
-    echo [ERROR] Docker Desktop daemon is not currently running.
-    echo Please start Docker Desktop and run this script again.
-    echo.
-    pause
-    exit /b 1
+    echo [*] Docker Desktop daemon is not currently running.
+    echo [*] Attempting to start Docker Desktop...
+    if exist "C:\Program Files\Docker\Docker\Docker Desktop.exe" (
+        start "" "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+    )
+    echo [*] Waiting up to 30 seconds for Docker daemon to become responsive...
+    set /a D_WAIT=0
+    :WAIT_DOCKER_RUNBAT
+    docker info >nul 2>&1
+    if !ERRORLEVEL! EQU 0 goto DOCKER_ACTIVE_GO
+    set /a D_WAIT+=1
+    if !D_WAIT! GEQ 15 (
+        echo.
+        echo [ERROR] Docker Desktop daemon did not respond in time.
+        echo Please start Docker Desktop and run this script again.
+        pause
+        exit /b 1
+    )
+    <nul set /p =.
+    timeout /t 2 /nobreak >nul
+    goto WAIT_DOCKER_RUNBAT
 )
+:DOCKER_ACTIVE_GO
+echo.
 
 REM 4. Check Oracle Container status and start if needed
 echo [*] Checking Oracle Database container status...

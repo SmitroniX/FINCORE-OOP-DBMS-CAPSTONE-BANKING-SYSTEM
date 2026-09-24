@@ -26,6 +26,36 @@ An enterprise-grade Java application and Relational Database Management System (
 
 ---
 
+## 🛠️ Automated Setup & Zero-Config Prerequisites Installer
+
+If you are setting up FinCore on a fresh machine or need to auto-install all required software (**Java 21**, **JavaFX 21**, **Apache Maven**, **Docker Desktop**, and **Oracle Database 23c**):
+
+### Windows (Command Prompt / Batch):
+```cmd
+setup.bat
+```
+*(Or right-click and run `setup.bat` as Administrator)*
+
+### Windows (PowerShell):
+```powershell
+.\setup.ps1
+```
+
+### Linux / macOS (Bash):
+```bash
+./setup.sh
+```
+
+**What the Automated Setup does:**
+1. **Installs Java 21 LTS:** Detects if JDK 21 is present. If missing, automatically installs Eclipse Adoptium Temurin 21 (or BellSoft Liberica 21 Full with native JavaFX bundle) via `winget` / official MSI and refreshes `JAVA_HOME` & `PATH` in your session.
+2. **Installs Apache Maven:** Automatically installs and configures Apache Maven 3.9+ and sets `M2_HOME`.
+3. **Installs Docker Desktop:** Verifies Docker CLI. Installs Docker Desktop if missing and starts the Docker daemon.
+4. **Pre-caches JavaFX 21 & Dependencies:** Resolves and compiles all dependencies (`javafx-controls`, `javafx-fxml`, `ojdbc11`, etc.) so the first launch is instant.
+5. **Initializes Oracle Database in Docker:** Automatically pulls `gvenzl/oracle-free:23-slim` and starts the `fincore-oracle-db` container on port `1521` (`FREEPDB1`).
+6. **Self-Healing Launcher:** `run.bat` automatically detects missing prerequisites on first run and offers to launch `setup.bat` for you!
+
+---
+
 ## ☕ Pure Maven Execution (`mvn`)
 
 You can execute everything directly through standard **Maven commands** in your terminal or Command Prompt:
@@ -333,6 +363,8 @@ oop-dbms-capstone/
 ├── init-scripts/                   # Container entrypoint SQL initialization
 │   ├── 01_schema.sql               # Oracle DDL: Tables, Sequences, Triggers, Views, PL/SQL
 │   └── 02_seed.sql                 # Oracle DML: Seed users, accounts, records, budgets
+├── setup.bat / setup.ps1           # Windows Automated Prerequisites Installer (Java 21, JavaFX 21, Maven, Docker)
+├── setup.sh                        # Linux / macOS Automated Prerequisites Installer
 ├── start-db.bat / start-db.sh      # Launch Oracle in Docker (Windows / Linux)
 ├── stop-db.bat / stop-db.sh        # Stop Oracle in Docker (Windows / Linux)
 ├── run.bat                         # Windows CMD all-in-one launcher (auto-starts Docker & app)

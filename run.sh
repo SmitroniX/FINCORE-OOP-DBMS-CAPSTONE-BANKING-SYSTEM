@@ -12,6 +12,18 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# 0. Check Java & Maven prerequisites
+if ! command -v java &> /dev/null || ! command -v mvn &> /dev/null; then
+    echo "[!] Java 21 or Apache Maven is not detected."
+    if [ -f "$SCRIPT_DIR/setup.sh" ]; then
+        echo "[*] Launching ./setup.sh to install all required dependencies..."
+        bash "$SCRIPT_DIR/setup.sh"
+    else
+        echo "[ERROR] Please install Java 21 and Maven, then run again."
+        exit 1
+    fi
+fi
+
 # 1. Check Docker if available
 if command -v docker &> /dev/null; then
     if docker info &> /dev/null; then
