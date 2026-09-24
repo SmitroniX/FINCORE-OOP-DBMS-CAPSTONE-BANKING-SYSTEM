@@ -67,31 +67,33 @@ public class DatabaseManager {
                 return conn;
             }
 
-            // Attempt secondary/alternative Oracle URLs (e.g. CDB service /FREE or classic :xe)
-            String[] altUrls = new String[] {
-                "jdbc:oracle:thin:@localhost:1521/FREE",
-                "jdbc:oracle:thin:@localhost:1521:FREE",
-                "jdbc:oracle:thin:@localhost:1521/XEPDB1",
-                config.getOracleAltUrl()
-            };
-            for (String altUrl : altUrls) {
-                try {
-                    conn = DriverManager.getConnection(altUrl, user, pass);
-                    System.out.println("[DatabaseManager] Connected to Oracle Database via target: " + altUrl);
-                    return conn;
-                } catch (SQLException ignored) {
+            // Attempt secondary/alternative Oracle URLs only if targeting localhost
+            if (primaryUrl.contains("localhost") || primaryUrl.contains("127.0.0.1")) {
+                String[] altUrls = new String[] {
+                    "jdbc:oracle:thin:@localhost:1521/FREE",
+                    "jdbc:oracle:thin:@localhost:1521:FREE",
+                    "jdbc:oracle:thin:@localhost:1521/XEPDB1",
+                    config.getOracleAltUrl()
+                };
+                for (String altUrl : altUrls) {
+                    try {
+                        conn = DriverManager.getConnection(altUrl, user, pass);
+                        System.out.println("[DatabaseManager] Connected to Oracle Database via target: " + altUrl);
+                        return conn;
+                    } catch (SQLException ignored) {
+                    }
+                }
+
+                if ("true".equalsIgnoreCase(config.getProperty("oracle.fallback.sqlite", "false"))) {
+                    System.out.println("[DatabaseManager] Primary DBMS Engine: Oracle Database in Docker (" + primaryUrl + ").");
+                    System.out.println("[DatabaseManager] Notice: Oracle service is not currently available on port 1521.");
+                    System.out.println("[DatabaseManager] Activating automated embedded SQLite engine to maintain 100% operational availability.");
+                    config.setDbType("sqlite");
+                    initDrivers();
+                    return getConnection();
                 }
             }
-
-            if ("true".equalsIgnoreCase(config.getProperty("oracle.fallback.sqlite", "false"))) {
-                System.out.println("[DatabaseManager] Primary DBMS Engine: Oracle Database in Docker (" + primaryUrl + ").");
-                System.out.println("[DatabaseManager] Notice: Oracle service is not currently available on port 1521.");
-                System.out.println("[DatabaseManager] Activating automated embedded SQLite engine to maintain 100% operational availability.");
-                config.setDbType("sqlite");
-                initDrivers();
-                return getConnection();
-            }
-            throw new SQLException("Cannot establish connection to Oracle Database at " + primaryUrl + " (" + user + "). Ensure Oracle container 'fincore-oracle-db' is running!");
+            throw new SQLException("Cannot establish connection to Oracle Database at " + primaryUrl + " (" + user + "). Ensure host is reachable, port is open, and credentials are valid.");
         } else if ("mysql".equals(type)) {
             conn = DriverManager.getConnection(config.getJdbcUrl(), config.getDbUser(), config.getDbPassword());
             return conn;

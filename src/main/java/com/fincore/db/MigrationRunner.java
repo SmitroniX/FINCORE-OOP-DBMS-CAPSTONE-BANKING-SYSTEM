@@ -23,6 +23,10 @@ public class MigrationRunner {
     }
 
     public void runMigrations() {
+        if (!dbManager.getConfig().isMigrationEnabled()) {
+            System.out.println("[Migration] Database schema migration is disabled (db.migrate=false). Live server schema preserved.");
+            return;
+        }
         String schemaFile = dbManager.getConfig().getSchemaFile();
         String seedFile = dbManager.getConfig().getSeedFile();
         executeSqlScript(schemaFile, "Schema Migration");

@@ -42,8 +42,24 @@ public class DatabaseConfig {
         }
     }
 
+    public String resolveValue(String sysProp, String envVar, String propKey, String fallback) {
+        String val = System.getProperty(sysProp);
+        if (val != null && !val.trim().isEmpty()) {
+            return val.trim();
+        }
+        val = System.getenv(envVar);
+        if (val != null && !val.trim().isEmpty()) {
+            return val.trim();
+        }
+        val = properties.getProperty(propKey);
+        if (val != null && !val.trim().isEmpty()) {
+            return val.trim();
+        }
+        return fallback;
+    }
+
     public String getDbType() {
-        return properties.getProperty("db.type", "oracle").trim().toLowerCase();
+        return resolveValue("db.type", "DB_TYPE", "db.type", "oracle").trim().toLowerCase();
     }
 
     public void setDbType(String dbType) {
@@ -51,13 +67,17 @@ public class DatabaseConfig {
     }
 
     public String getJdbcUrl() {
+        String directUrl = resolveValue("db.url", "DB_URL", "db.url", null);
+        if (directUrl != null) {
+            return directUrl;
+        }
         String type = getDbType();
         if ("oracle".equals(type)) {
-            return properties.getProperty("oracle.url", "jdbc:oracle:thin:@localhost:1521/FREEPDB1");
+            return resolveValue("oracle.url", "ORACLE_URL", "oracle.url", "jdbc:oracle:thin:@localhost:1521/FREEPDB1");
         } else if ("mysql".equals(type)) {
-            return properties.getProperty("mysql.url", "jdbc:mysql://localhost:3306/fincore_db");
+            return resolveValue("mysql.url", "MYSQL_URL", "mysql.url", "jdbc:mysql://localhost:3306/fincore_db");
         }
-        return properties.getProperty("sqlite.url", "jdbc:sqlite:fincore_banking.db");
+        return resolveValue("sqlite.url", "SQLITE_URL", "sqlite.url", "jdbc:sqlite:fincore_banking.db");
     }
 
     public String getDbUrl() {
@@ -75,23 +95,36 @@ public class DatabaseConfig {
     }
 
     public String getDbUser() {
+        String directUser = resolveValue("db.user", "DB_USER", "db.user", null);
+        if (directUser != null) {
+            return directUser;
+        }
         String type = getDbType();
         if ("oracle".equals(type)) {
-            return properties.getProperty("oracle.user", "fincore_user");
+            return resolveValue("oracle.user", "ORACLE_USER", "oracle.user", "fincore_user");
         } else if ("mysql".equals(type)) {
-            return properties.getProperty("mysql.user", "root");
+            return resolveValue("mysql.user", "MYSQL_USER", "mysql.user", "root");
         }
         return "";
     }
 
     public String getDbPassword() {
+        String directPass = resolveValue("db.password", "DB_PASSWORD", "db.password", null);
+        if (directPass != null) {
+            return directPass;
+        }
         String type = getDbType();
         if ("oracle".equals(type)) {
-            return properties.getProperty("oracle.password", "fincore_pass");
+            return resolveValue("oracle.password", "ORACLE_PASSWORD", "oracle.password", "fincore_pass");
         } else if ("mysql".equals(type)) {
-            return properties.getProperty("mysql.password", "");
+            return resolveValue("mysql.password", "MYSQL_PASSWORD", "mysql.password", "");
         }
         return "";
+    }
+
+    public boolean isMigrationEnabled() {
+        String val = resolveValue("db.migrate", "DB_MIGRATE", "db.migrate", "true");
+        return !"false".equalsIgnoreCase(val);
     }
 
     public String getOracleAltUrl() {
